@@ -1,0 +1,62 @@
+package com.xunyun.infanteduplatform.domain;
+
+public class SysUserLogin {
+	private Integer id;//唯一编号
+	private String name;//登录名
+	private String email;//Email
+	private String mobile;//手机
+	private String password;//登录密码
+	private String passwordkey;//加密密码的安全码
+	private String passwordquestion;//密码保护问题1密码保护问题
+	private String passwordanswer;//密码保护问题的答案
+	
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public String getMobile() {
+		return mobile;
+	}
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	public String getPasswordkey() {
+		return passwordkey;
+	}
+	public void setPasswordkey(String passwordkey) {
+		this.passwordkey = passwordkey;
+	}
+	public String getPasswordquestion() {
+		return passwordquestion;
+	}
+	public void setPasswordquestion(String passwordquestion) {
+		this.passwordquestion = passwordquestion;
+	}
+	public String getPasswordanswer() {
+		return passwordanswer;
+	}
+	public void setPasswordanswer(String passwordanswer) {
+		this.passwordanswer = passwordanswer;
+	}
+
+}

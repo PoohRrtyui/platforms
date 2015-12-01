@@ -1,0 +1,148 @@
+package com.xunyun.infanteduplatform.domain;
+
+import java.util.Date;
+
+public class SysUserInfo {
+	private Integer id;//用户ID
+	private String username;//登录名
+	private String nickname;//昵称
+	private String NAME;//真是姓名
+	private long gendercode;//性别
+	private long idtype;//证件类型
+	private String idno;//身份证号
+	private Date birthday;//出生日期
+	private String mobile;//手机
+	private String telephone;//联系电话
+	private String email;//邮箱
+	private String qq;//QQ
+	private String description;//个人介绍
+	private String photourl;//个人头像图片文件夹名称
+	private String url;//个人网址
+	private String deleteflg;//删除标记，0.未删除 1.删除
+	private Date creationtime;//创建时间
+	private String createdby;//创建人
+	private Date lastupdatetime;//最终修改时间
+	private String lastupdatedby;//最终修改人
+	
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getNickname() {
+		return nickname;
+	}
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
+	}
+	public String getNAME() {
+		return NAME;
+	}
+	public void setNAME(String nAME) {
+		NAME = nAME;
+	}
+	public long getGendercode() {
+		return gendercode;
+	}
+	public void setGendercode(long gendercode) {
+		this.gendercode = gendercode;
+	}
+	public long getIdtype() {
+		return idtype;
+	}
+	public void setIdtype(long idtype) {
+		this.idtype = idtype;
+	}
+	public String getIdno() {
+		return idno;
+	}
+	public void setIdno(String idno) {
+		this.idno = idno;
+	}
+	public Date getBirthday() {
+		return birthday;
+	}
+	public void setBirthday(Date birthday) {
+		this.birthday = birthday;
+	}
+	public String getMobile() {
+		return mobile;
+	}
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+	public String getTelephone() {
+		return telephone;
+	}
+	public void setTelephone(String telephone) {
+		this.telephone = telephone;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getQq() {
+		return qq;
+	}
+	public void setQq(String qq) {
+		this.qq = qq;
+	}
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	public String getPhotourl() {
+		return photourl;
+	}
+	public void setPhotourl(String photourl) {
+		this.photourl = photourl;
+	}
+	public String getUrl() {
+		return url;
+	}
+	public void setUrl(String url) {
+		this.url = url;
+	}
+	public String getDeleteflg() {
+		return deleteflg;
+	}
+	public void setDeleteflg(String deleteflg) {
+		this.deleteflg = deleteflg;
+	}
+	public Date getCreationtime() {
+		return creationtime;
+	}
+	public void setCreationtime(Date creationtime) {
+		this.creationtime = creationtime;
+	}
+	public String getCreatedby() {
+		return createdby;
+	}
+	public void setCreatedby(String createdby) {
+		this.createdby = createdby;
+	}
+	public Date getLastupdatetime() {
+		return lastupdatetime;
+	}
+	public void setLastupdatetime(Date lastupdatetime) {
+		this.lastupdatetime = lastupdatetime;
+	}
+	public String getLastupdatedby() {
+		return lastupdatedby;
+	}
+	public void setLastupdatedby(String lastupdatedby) {
+		this.lastupdatedby = lastupdatedby;
+	}
+}

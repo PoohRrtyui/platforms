@@ -1,0 +1,19 @@
+package com.xunyun.infanteduplatform.controller.pages;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+/**
+ * 页面controller
+ * Created by PoohD on 2015/11/27.
+ */
+@Controller
+@RequestMapping("page")
+public class PagesController {
+    @RequestMapping("/data")
+    public ModelAndView layout() {
+        return new ModelAndView("pages/dataTables");
+    }
+}
+

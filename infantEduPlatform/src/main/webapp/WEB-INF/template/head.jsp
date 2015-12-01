@@ -1,0 +1,27 @@
+<%--
+  Created by IntelliJ IDEA.
+  User: PoohD
+  Date: 2015/11/26
+  Time: 10:15
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+         pageEncoding="UTF-8" %>
+<%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles" %>
+
+<!-- Main Header -->
+<header class="main-header">
+<!-- Logo -->
+	<a href="#" class="logo">
+     	<!-- mini logo for sidebar mini 50x50 pixels -->
+     	<span class="logo-mini"><b>I</b>EP</span>
+     	<span class="logo-lg"><b>幼教</b>平台</span>
+ 	</a>
+ 	<!-- Header Navbar -->
+ 	<nav class="navbar navbar-static-top" role="navigation">
+    	<!-- Sidebar toggle button-->
+     	<a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+        	<span class="sr-only">Toggle navigation</span>
+     	</a>
+ 	</nav>
+</header>

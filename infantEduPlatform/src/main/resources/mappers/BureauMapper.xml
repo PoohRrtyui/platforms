@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.BureauMapper">
+    <!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache" /> -->
+    <resultMap type="com.xunyun.infanteduplatform.domain.BureauInfo" id="BureauInfoResultMap">
+        <result column="organizationId" property="organizationId" jdbcType="NUMERIC"/>
+        <result column="bureauName" property="bureauName" jdbcType="VARCHAR"/>
+        <result column="parentBureauId" property="parentBureauId" jdbcType="NUMERIC"/>
+        <result column="isChild" property="isChild" jdbcType="INTEGER"/>
+        <result column="parentBureauName" property="parentBureauName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 查询单位列表 -->
+    <select id="queryBureauList" resultMap="BureauInfoResultMap" parameterType="Integer">
+        select b.organizationId,b.bureauName,br.parentBureauId,br.isChild from bureauInfo b
+        inner join bureauRelation br
+        on br.bureauId = b.organizationId
+        where br.parentBureauId = #{id}
+    </select>
+
+    <select id="queryBureauInfo" resultMap="BureauInfoResultMap" parameterType="Integer">
+        select s.*,bl.bureauName as parentBureauName from bureauInfo bl
+        inner join (
+        select b.organizationId,
+        b.organizationCode,
+        b.orgType,
+        b.bureauName,
+        br.parentBureauId
+        from bureauInfo b
+        inner join bureauRelation br
+        on br.bureauId = b.organizationId
+        where b.organizationId = #{bureauId}) s
+        on s.parentBureauId = bl.organizationId
+    </select>
+
+</mapper>
