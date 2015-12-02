@@ -33,4 +33,54 @@
         on s.parentBureauId = bl.organizationId
     </select>
 
+    <insert id="saveBureauInfo" parameterMap="com.xunyun.infanteduplatform.domain.BureauInfo"
+            useGeneratedKeys="true">
+        <selectKey resultType="String" order="BEFORE" keyProperty="organizationId">
+            select SEQ_ARTICLES.nextval from dual
+        </selectKey>
+        insert into bureauInfo(organizationId,organizationCode,bureauName,bureauAddress,
+        homepageUrl,telephone,dutyPerson,postalCode,orgType)
+        values
+        (#{organizationId},#{organizationCode},#{bureauName},#{bureauAddress},
+        #{homepageUrl},#{telephone},#{dutyPerson},#{postalCode},#{orgType})
+    </insert>
+
+
+    <update id="saveBureauInfo" parameterMap="com.xunyun.infanteduplatform.domain.BureauInfo">
+        update bureauInfo
+        <trim prefix="SET" suffixOverrides=",">
+
+            <if test="organizationCode != null ">
+                organizationCode=#{organizationCode},
+            </if>
+            <if test="bureauName != null ">
+                bureauName=#{bureauName},
+            </if>
+            <if test="bureauAddress != null ">
+                bureauAddress = #{bureauAddress},
+            </if>
+            <if test="homepageUrl != null ">
+                homepageUrl = #{homepageUrl},
+            </if>
+            <if test="telephone != null ">
+                telephone = #{telephone},
+            </if>
+            <if test="dutyPerson != null ">
+                dutyPerson = #{dutyPerson},
+            </if>
+            <if test="postalCode != null ">
+                postalCode = #{postalCode},
+            </if>
+            <if test="orgType != null ">
+                orgType=#{orgType},
+            </if>
+        </trim>
+        where organizationId = #{organizationId}
+    </update>
+
+    <!--单位逻辑删除-->
+    <update id="deleteBureau" parameterType="Integer">
+        update bureauInfo set deleteFlg = 1 where organizationId = #{organizationId}
+    </update>
+
 </mapper>

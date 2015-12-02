@@ -30,12 +30,21 @@ public class PagesController {
     }
 
     /**
-     *参考列表页
+     *单位信息列表页面
      * @return ModelAndView
      */
     @RequestMapping("/bureau")
     public ModelAndView bureau() {
         return new ModelAndView("pages/bureau/bureauInfo");
+    }
+
+    /**
+     *单位信息列表页面
+     * @return ModelAndView
+     */
+    @RequestMapping("/bureauOp")
+    public ModelAndView bureauOperation() {
+        return new ModelAndView("pages/bureau/bureauOp");
     }
 }
 

@@ -5,11 +5,9 @@ import com.xunyun.infanteduplatform.domain.TreeEntity;
 import com.xunyun.infanteduplatform.service.BureauService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -34,9 +32,45 @@ public class BureauController {
         return this.bureauService.queryBureauList(id);
     }
 
+    /**
+     * 查询单位基本信息
+     * @param bureauId 单位id
+     * @return List<BureauInfo>
+     */
     @RequestMapping(value="queryBureauInfo",method = RequestMethod.POST)
     public @ResponseBody
     List<BureauInfo> queryBureauInfo(@RequestParam int bureauId){
         return this.bureauService.queryBureauInfo(bureauId);
+    }
+
+    /**
+     * 添加修改单位信息
+     * @param bureauInfo 单位基本信息
+     * @param parentBureauId 上级单位id
+     * @return 保存状态
+     */
+    @RequestMapping(value="saveBureauInfo",method = RequestMethod.POST)
+    public @ResponseBody
+    Integer saveBureauInfo(@ModelAttribute(value="bureau")BureauInfo bureauInfo,
+        @RequestParam(value="parentBureauId")Integer parentBureauId){
+        int saveOrUpdate ;
+        String c = "Pooh";
+        bureauInfo.setCreatedBy(c);
+        bureauInfo.setLastUpdatedBy(c);
+        bureauInfo.setCreationTime(Calendar.getInstance().getTime());
+        bureauInfo.setLastUpdateTime(Calendar.getInstance().getTime());
+        if(bureauInfo.getBureauId()!=null){
+            saveOrUpdate = this.bureauService.updateBureauInfo(bureauInfo,parentBureauId);
+        }else{
+
+            saveOrUpdate=this.bureauService.saveBureauInfo(bureauInfo,parentBureauId);
+        }
+        return saveOrUpdate;
+    }
+
+    @RequestMapping(value="deleteBureauInfo",method = RequestMethod.POST)
+    public @ResponseBody
+    Integer deleteBureauInfo(@RequestParam(value="bureauId") Integer bureauId){
+        return this.bureauService.deleteBureauInfo(bureauId);
     }
 }

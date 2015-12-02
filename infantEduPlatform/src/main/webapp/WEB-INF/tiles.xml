@@ -7,4 +7,5 @@
         <put-attribute name="main-header" value="/WEB-INF/template/head.jsp"/>
         <put-attribute name="main-sidebar" value="/WEB-INF/template/menu.jsp"/>
     </definition>
+
 </tiles-definitions>

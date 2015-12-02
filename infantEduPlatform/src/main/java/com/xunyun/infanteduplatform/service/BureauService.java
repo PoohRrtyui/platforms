@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Administrator on 2015/12/1.
@@ -21,7 +23,7 @@ public class BureauService {
 
     /**
      * 查询单位信息列表并转换成树
-     * @param BureauId 单位Id
+     * @param id 单位Id
      * @return List<TreeEntity>
      */
     public List<TreeEntity> queryBureauList (int id){
@@ -42,4 +44,23 @@ public class BureauService {
     public List<BureauInfo> queryBureauInfo (int bureauId){
         return this.bureauMapper.queryBureauInfo(bureauId);
     }
+
+    public Integer saveBureauInfo(BureauInfo bureauInfo,Integer parentBureauId){
+        Map<String,Object> map = new HashMap<>();
+        map.put("bureau",bureauInfo);
+        map.put("parentBureauId",parentBureauId);
+        return this.bureauMapper.saveBureauInfo(bureauInfo);
+    }
+
+    public Integer updateBureauInfo(BureauInfo bureauInfo,Integer parentBureauId){
+        Map<String,Object> map = new HashMap<>();
+        map.put("bureau",bureauInfo);
+        map.put("parentBureauId",parentBureauId);
+        return this.bureauMapper.updateBureauInfo(bureauInfo);
+    }
+
+    public Integer deleteBureauInfo(Integer bureauId){
+        return this.bureauMapper.deleteBureau(bureauId);
+    }
+
 }

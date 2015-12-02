@@ -1,24 +1,19 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-         pageEncoding="UTF-8" %>
-<%@ taglib prefix="tiles" uri="http://tiles.apache.org/tags-tiles" %>
 <%--
   Created by IntelliJ IDEA.
   User: Administrator
   Date: 2015/12/1
   Time: 11:28
+  单位信息列表页面
   To change this template use File | Settings | File Templates.
 --%>
-
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+         pageEncoding="UTF-8" %>
+<%@ taglib prefix="tiles" uri="http://tiles.apache.org/tags-tiles" %>
 <tiles:insertDefinition name="defaultTemplate">
     <tiles:putAttribute name="body">
         <link rel="stylesheet" href="static/plugins/zTree3.5.18/css/metroStyle/metroStyle.css">
         <script src="static/plugins/zTree3.5.18/js/jquery.ztree.all-3.5.min.js"></script>
-        <script src="static/js/bureau/bureauInfo.js"></script>
-        <script>
-            $(function () {
-                bureau.init();
-            });
-        </script>
+        <script src="static/plugins/layer/layer.js"></script>
         <div class="col-xs-2">
             <div class="row">
                 <ul id="bureauTree" class="ztree"></ul>
@@ -27,11 +22,28 @@
         <div class="col-xs-10">
             <div class="row">
                 <div class="col-md-8">
+                    <div class="box">
+                        <div class="box-body">
+                            <div class="btn-group">
+                                <button id="bureauAdd" type="button" class="btn btn-info">添加单位
+                                </button>
+                                <button id="schoolAdd" type="button" class="btn btn-info">添加学校
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="box box-solid">
                         <div class="box-header with-border">
                             <i class="fa fa-text-width"></i>
 
                             <h3 class="box-title">单位基本信息</h3>
+
+                            <div class="btn-group pull-right">
+                                <button id="bureauUpdate" type="button" class="btn btn-info">修改单位
+                                </button>
+                                <button id="bureauDel" type="button" class="btn btn-info">删除单位
+                                </button>
+                            </div>
                         </div>
                         <!-- /.box-header -->
                         <div id="bureau-box" class="box-body">
@@ -58,50 +70,16 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-xs-4">
-                    <div class="box box-solid box-primary">
-                        <div class="box-header">
-                            <div>
-                                <h3 class="widget-user-username">Alexander Pierce</h3>
-                                <h5 class="widget-user-desc">Founder &amp; CEO</h5>
-                            </div>
-                        </div><!-- /.box-header -->
-                        <div class="box-body">
-                            <div class="row">
-                                <div class="col-sm-4 border-right">
-                                    <div class="description-block">
-                                        <h5 class="description-header">3,200</h5>
-                                        <span class="description-text">SALES</span>
-                                    </div>
-                                    <!-- /.description-block -->
-                                </div>
-                                <!-- /.col -->
-                                <div class="col-sm-4 border-right">
-                                    <div class="description-block">
-                                        <h5 class="description-header">13,000</h5>
-                                        <span class="description-text">FOLLOWERS</span>
-                                    </div>
-                                    <!-- /.description-block -->
-                                </div>
-                                <!-- /.col -->
-                                <div class="col-sm-4">
-                                    <div class="description-block">
-                                        <h5 class="description-header">35</h5>
-                                        <span class="description-text">PRODUCTS</span>
-                                    </div>
-                                    <!-- /.description-block -->
-                                </div>
-                                <!-- /.col -->
-                            </div>
-                        </div><!-- /.box-body -->
-                    </div>
-                </div>
+            <div id="schoolContainer" class="row">
+
             </div>
         </div>
+
+        <script src="static/js/bureau/bureauInfo.js"></script>
         <script>
-
-
+            $(function () {
+                bureau.init();
+            });
         </script>
     </tiles:putAttribute>
 </tiles:insertDefinition>
