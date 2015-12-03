@@ -108,7 +108,7 @@ var bureau = {
                 layer.open({
                     type: 1,
                     title:"添加单位",
-                    area:['800px','500px'],
+                    area:['900px','500px'],
                     content: str //注意，如果str是object，那么需要字符拼接。
                 });
             });
@@ -117,9 +117,10 @@ var bureau = {
 
     bureauUpdate:function(){
         $("#bureauUpdate").on("click",function(){
-            var bureauId = $("#bureauId").val();
-            $.post('page/bureauOp', {"bureauId":bureauId}, function(str){
+            var bureauInfoId = $("#bureauInfoId").val();
+            $.post('page/bureauOp', {"bureauId":bureauInfoId}, function(str){
                 layer.open({
+                    type:1,
                     title: "修改单位信息",
                     area:['900px','500px'],
                     content: str //注意，如果str是object，那么需要字符拼接。
@@ -145,6 +146,7 @@ var bureauSetting = {
 
 function bureauTreeOnClick (event, treeId, treeNode) {
     var bureauId = bureauTree.getSelectedNodes()[0].id;
+    $("#bureauInfoId").val(bureauId);
     bureau.queryBureauInfo(bureauId);
     bureau.querySchoolByBureauId(bureauId);
 }

@@ -47,7 +47,7 @@
                         </div>
                         <!-- /.box-header -->
                         <div id="bureau-box" class="box-body">
-                            <input id = "bureauId" type="hidden" />
+                            <input id = "bureauInfoId" type="hidden" />
                             <div class="col-xs-5">
                                 <dl class="dl-horizontal">
                                     <dt>单位名称</dt>

@@ -30,14 +30,18 @@
                 </div>
                 <div class="form-group">
                     <label for="parentBureau" class="col-sm-2 control-label">上级单位</label>
-                    <div class="col-sm-10">
+                    <div class="col-sm-4">
                         <input type="text" class="form-control" id="parentBureau"
                                name = "parentBureauName" placeholder="上级单位" >
                         <input type="hidden" name="parentBureauId">
+                        <div id="bureauContent" class="form-control"
+                             style="width:270px;height:auto;display:none; position: absolute;">
+                            <ul id="parentBureauTree"  class="ztree"></ul>
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="bureauName" class="col-sm-2 control-label">名称</label>
+                    <label for="bureauName" class="col-sm-2 control-label">单位名称</label>
                     <div class="col-sm-4">
                         <input type="text" class="form-control" id="bureauName"
                                name="bureauName" placeholder="单位名称">
