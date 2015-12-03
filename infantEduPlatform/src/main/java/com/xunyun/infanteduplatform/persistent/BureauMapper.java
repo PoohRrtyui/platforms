@@ -13,7 +13,7 @@ import java.util.Map;
 
 public interface BureauMapper {
     List<BureauInfo> queryBureauList(int id);
-    List<BureauInfo> queryBureauInfo(int BureauId);
+    BureauInfo queryBureauInfo(int BureauId);
     Integer saveBureauInfo(BureauInfo bureauInfo);
     Integer updateBureauInfo(BureauInfo bureauInfo);
     Integer deleteBureau(Integer BureauId);

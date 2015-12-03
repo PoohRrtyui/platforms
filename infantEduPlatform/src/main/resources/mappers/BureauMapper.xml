@@ -25,6 +25,12 @@
         b.organizationCode,
         b.orgType,
         b.bureauName,
+        b.dutyPerson,
+        b.locationCode,
+        b.bureauAddress,
+        b.homepageUrl,
+        b.telephone,
+        b.postalCode,
         br.parentBureauId
         from bureauInfo b
         inner join bureauRelation br
@@ -33,20 +39,22 @@
         on s.parentBureauId = bl.organizationId
     </select>
 
-    <insert id="saveBureauInfo" parameterMap="com.xunyun.infanteduplatform.domain.BureauInfo"
+    <insert id="saveBureauInfo" parameterType="com.xunyun.infanteduplatform.domain.BureauInfo"
             useGeneratedKeys="true">
-        <selectKey resultType="String" order="BEFORE" keyProperty="organizationId">
-            select SEQ_ARTICLES.nextval from dual
+        <selectKey resultType="Long" order="BEFORE" keyProperty="organizationId">
+            select SEQ_BUREAUINFO.nextval from dual
         </selectKey>
         insert into bureauInfo(organizationId,organizationCode,bureauName,bureauAddress,
-        homepageUrl,telephone,dutyPerson,postalCode,orgType)
+        homepageUrl,telephone,dutyPerson,postalCode,orgType,locationCode,deleteFlg,
+        createdBy,creationTime,lastUpdateTime,lastUpdatedBy)
         values
-        (#{organizationId},#{organizationCode},#{bureauName},#{bureauAddress},
-        #{homepageUrl},#{telephone},#{dutyPerson},#{postalCode},#{orgType})
+        (#{organizationId},#{organizationId},#{bureauName},#{bureauAddress},
+        #{homepageUrl},#{telephone},#{dutyPerson},#{postalCode},#{orgType},#{locationCode},
+        #{deleteFlg},#{createdBy},#{creationTime},#{lastUpdateTime},#{lastUpdatedBy})
     </insert>
 
 
-    <update id="saveBureauInfo" parameterMap="com.xunyun.infanteduplatform.domain.BureauInfo">
+    <update id="updateBureauInfo" parameterType="com.xunyun.infanteduplatform.domain.BureauInfo">
         update bureauInfo
         <trim prefix="SET" suffixOverrides=",">
 

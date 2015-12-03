@@ -4,16 +4,23 @@
  */
 var orgTypeDic = {"0":"普通单位","1":"主管单位"};
 var bureauTree;
+var s = $("#bureau-box");
 var bureau = {
     init: function () {
         bureau.showBureauTree();
         bureau.bureauAdd();
+        s.hide();
+        bureau.bureauUpdate();
     },
     //显示栏目树一级栏目
     showBureauTree: function () {
          bureauTree =$.fn.zTree.init($("#bureauTree"), bureauSetting);
     },
 
+    /**
+     * 查询
+     * @param bureauIds
+     */
     queryBureauInfo: function (bureauIds) {
         $.ajax({
             async:true,
@@ -22,12 +29,15 @@ var bureau = {
             data:{"bureauId":bureauIds},
             dataType:"JSON",
             success:function(data){
-                var boxdd= $("#bureau-box").find("dd");
-                boxdd[0].innerText = data[0].bureauName;
-                boxdd[1].innerText = data[0].organizationCode;
-                boxdd[2].innerText = orgTypeDic[data[0].orgType];
-                boxdd[3].innerText = data[0].parentBureauId;
-                boxdd[4].innerText = data[0].parentBureauName;
+                s.show();
+                var boxdd= s.find("dd");
+                boxdd[0].innerText = data.bureauName;
+                boxdd[1].innerText = data.organizationCode;
+                boxdd[2].innerText = orgTypeDic[data.orgType];
+                boxdd[3].innerText = data.parentBureauId;
+                boxdd[4].innerText = data.parentBureauName;
+                boxdd[5].innerText = data.dutyPerson;
+                $("#bureauId").val(data.organizationId);
             }
         });
     },
@@ -97,7 +107,21 @@ var bureau = {
             $.post('page/bureauOp', {}, function(str){
                 layer.open({
                     type: 1,
-                    area:['1000px','700px'],
+                    title:"添加单位",
+                    area:['800px','500px'],
+                    content: str //注意，如果str是object，那么需要字符拼接。
+                });
+            });
+        });
+    },
+
+    bureauUpdate:function(){
+        $("#bureauUpdate").on("click",function(){
+            var bureauId = $("#bureauId").val();
+            $.post('page/bureauOp', {"bureauId":bureauId}, function(str){
+                layer.open({
+                    title: "修改单位信息",
+                    area:['900px','500px'],
                     content: str //注意，如果str是object，那么需要字符拼接。
                 });
             });

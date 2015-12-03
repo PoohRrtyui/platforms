@@ -9,13 +9,19 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
          pageEncoding="UTF-8" %>
 <%@ taglib prefix="tiles" uri="http://tiles.apache.org/tags-tiles" %>
-<tiles:insertDefinition name="defaultTemplate">
-    <tiles:putAttribute name="body">
-        <link rel="stylesheet" href="static/plugins/iCheck/square/blue.css">
-        <script src="static/plugins/iCheck/icheck.min.js"></script>
-        <div class="col-sm-10" id="settings">
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>AdminLTE 2 | Data Tables</title>
+    <link rel="stylesheet" href="static/plugins/iCheck/square/blue.css">
+</head>
+<body>
+
+        <div class="col-sm-12" id="settings">
             <form class="form-horizontal" id="bureauForm">
                 <div class="form-group">
+                    <input type="hidden" id="bureauId" name="organizationId" value="${BureauId}">
                     <label for="locationCode" class="col-sm-2 control-label">行政区域</label>
                     <div class="col-sm-10">
                         <input type="text" class="form-control" id="locationCode" placeholder="Name"
@@ -26,7 +32,8 @@
                     <label for="parentBureau" class="col-sm-2 control-label">上级单位</label>
                     <div class="col-sm-10">
                         <input type="text" class="form-control" id="parentBureau"
-                               placeholder="上级单位" >
+                               name = "parentBureauName" placeholder="上级单位" >
+                        <input type="hidden" name="parentBureauId">
                     </div>
                 </div>
                 <div class="form-group">
@@ -82,33 +89,26 @@
                 </div>
                 <div class="form-group">
                     <label for="input-1" class="col-sm-2 control-label">类型</label>
+                    <div class="col-sm-10">
                     <div class="iradio_square-blue">
-                        <input  type="radio" id="input-1" name="demo-radio">
+                        <input  type="radio" id="input-1" name="orgType" value="1">
                     </div>
                     <label for="input-1" class="">主管单位</label>
 
                     <div class="iradio_square-blue" >
-                        <input  type="radio" id="input-2" name="demo-radio">
+                        <input  type="radio" id="input-2" name="orgType" value="0">
                     </div>
                     <label for="input-2" class="">普通单位</label>
+                        </div>
                 </div>
                 <div class="form-group">
-                    <div class="col-sm-offset-2 col-sm-10">
-                        <button type="submit" class="btn btn-danger">保存</button>
+                    <div class="col-sm-offset-5 col-sm-7">
+                        <button type="button" id="bureauSave" class="btn btn-danger">保存</button>
                     </div>
                 </div>
             </form>
-            <script>
-                $(function(){
-                    $('input').iCheck({
-                        labelHover : false,
-                        cursor : true,
-                        checkboxClass : 'icheckbox_square-blue',
-                        radioClass : 'iradio_square-blue',
-                        increaseArea : '20%'
-                    });
-                });
-            </script>
+            <script src="static/plugins/iCheck/icheck.min.js"></script>
+            <script src="static/js/bureau/bureauOp.js"></script>
         </div>
-    </tiles:putAttribute>
-</tiles:insertDefinition>
+   </body>
+</html>

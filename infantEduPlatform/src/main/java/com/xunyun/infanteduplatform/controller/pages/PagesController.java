@@ -2,6 +2,7 @@ package com.xunyun.infanteduplatform.controller.pages;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
@@ -43,8 +44,10 @@ public class PagesController {
      * @return ModelAndView
      */
     @RequestMapping("/bureauOp")
-    public ModelAndView bureauOperation() {
-        return new ModelAndView("pages/bureau/bureauOp");
+    public ModelAndView bureauOperation(@RequestParam(value="bureauId",required = false)Long BureauId) {
+        ModelAndView mav= new ModelAndView("pages/bureau/bureauOp");
+        mav.addObject("BureauId",BureauId);
+        return mav;
     }
 }
 

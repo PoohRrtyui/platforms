@@ -39,7 +39,7 @@ public class BureauController {
      */
     @RequestMapping(value="queryBureauInfo",method = RequestMethod.POST)
     public @ResponseBody
-    List<BureauInfo> queryBureauInfo(@RequestParam int bureauId){
+    BureauInfo queryBureauInfo(@RequestParam int bureauId){
         return this.bureauService.queryBureauInfo(bureauId);
     }
 
@@ -59,10 +59,11 @@ public class BureauController {
         bureauInfo.setLastUpdatedBy(c);
         bureauInfo.setCreationTime(Calendar.getInstance().getTime());
         bureauInfo.setLastUpdateTime(Calendar.getInstance().getTime());
-        if(bureauInfo.getBureauId()!=null){
+        bureauInfo.setLocationCode("320000");
+        bureauInfo.setDeleteFlg(0);
+        if(bureauInfo.getOrganizationId()!=null){
             saveOrUpdate = this.bureauService.updateBureauInfo(bureauInfo,parentBureauId);
         }else{
-
             saveOrUpdate=this.bureauService.saveBureauInfo(bureauInfo,parentBureauId);
         }
         return saveOrUpdate;

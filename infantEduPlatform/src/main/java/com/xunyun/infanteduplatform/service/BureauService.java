@@ -41,7 +41,7 @@ public class BureauService {
         return treeEntityList;
     }
 
-    public List<BureauInfo> queryBureauInfo (int bureauId){
+    public BureauInfo queryBureauInfo (int bureauId){
         return this.bureauMapper.queryBureauInfo(bureauId);
     }
 

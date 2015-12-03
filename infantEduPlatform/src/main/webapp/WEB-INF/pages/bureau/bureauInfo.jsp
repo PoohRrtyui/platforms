@@ -47,6 +47,7 @@
                         </div>
                         <!-- /.box-header -->
                         <div id="bureau-box" class="box-body">
+                            <input id = "bureauId" type="hidden" />
                             <div class="col-xs-5">
                                 <dl class="dl-horizontal">
                                     <dt>单位名称</dt>
@@ -63,6 +64,8 @@
                                     <dd>NJ200000</dd>
                                     <dt>父单位名称</dt>
                                     <dd>江苏省教育厅</dd>
+                                    <dt>单位负责人</dt>
+                                    <dd></dd>
                                 </dl>
                             </div>
                         </div>
