@@ -24,7 +24,7 @@
                     <input type="hidden" id="bureauId" name="organizationId" value="${BureauId}">
                     <label for="locationCode" class="col-sm-2 control-label">行政区域</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="locationCode" placeholder="Name"
+                        <input type="text" class="form-control" id="locationCode" placeholder="行政区域"
                         name="locationCode">
                     </div>
                 </div>
@@ -67,14 +67,14 @@
 
                     <div class="col-sm-4">
                         <input type="text" class="form-control" id="homepageUrl"
-                               name="homepageUrl" placeholder="Email">
+                               name="homepageUrl" placeholder="单位主页">
                     </div>
 
                     <label for="telephone" class="col-sm-2 control-label">单位电话</label>
 
                     <div class="col-sm-4">
                         <input type="text" class="form-control" id="telephone"
-                               name="telephone" placeholder="Email">
+                               name="telephone" placeholder="单位电话">
                     </div>
                 </div>
                 <div class="form-group">
@@ -82,13 +82,13 @@
 
                     <div class="col-sm-4">
                         <input type="text" class="form-control" id="dutyPerson"
-                               name="dutyPerson" placeholder="Email">
+                               name="dutyPerson" placeholder="联系人">
                     </div>
                     <label for="postalCode" class="col-sm-2 control-label">邮编</label>
 
                     <div class="col-sm-4">
                         <input type="text" class="form-control" id="postalCode"
-                               name="postalCode" placeholder="Email">
+                               name="postalCode" placeholder="邮编">
                     </div>
                 </div>
                 <div class="form-group">

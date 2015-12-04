@@ -39,6 +39,7 @@
         on s.parentBureauId = bl.organizationId
     </select>
 
+    <!--添加单位信息-->
     <insert id="saveBureauInfo" parameterType="com.xunyun.infanteduplatform.domain.BureauInfo"
             useGeneratedKeys="true">
         <selectKey resultType="Long" order="BEFORE" keyProperty="organizationId">
@@ -53,10 +54,19 @@
         #{deleteFlg},#{createdBy},#{creationTime},#{lastUpdateTime},#{lastUpdatedBy})
     </insert>
 
+    <!--添加单位关联信息-->
+    <insert id="saveBureauRelation" parameterType="com.xunyun.infanteduplatform.domain.BureauRelation">
+        insert into bureauRelation (bureauId,parentBureauId,isChild)
+        values
+        (#{bureauId},#{parentBureauId},#{isChild})
+    </insert>
 
     <update id="updateBureauInfo" parameterType="com.xunyun.infanteduplatform.domain.BureauInfo">
         update bureauInfo
         <trim prefix="SET" suffixOverrides=",">
+
+
+
 
             <if test="organizationCode != null ">
                 organizationCode=#{organizationCode},

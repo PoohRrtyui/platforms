@@ -5,26 +5,28 @@ package com.xunyun.infanteduplatform.domain;
  * 单位关联实体类
  */
 public class BureauRelation {
-    private Long bureauId; /** 单位机构编码    */
-    private Long parentBureauId;   /** 所属主管单位编码     */
+    private Integer bureauId; /** 单位机构编码    */
+    private Integer parentBureauId;   /** 所属主管单位编码     */
     private Integer isChild;    /**是否有子单位，0：没有，1：有*/
 
-    /** getter setter*/
-    public Long getBureauId() {
+    public Integer getBureauId() {
         return bureauId;
     }
 
-    public void setBureauId(Long bureauId) {
+    public void setBureauId(Integer bureauId) {
         this.bureauId = bureauId;
     }
 
-    public Long getParentBureauId() {
+    public Integer getParentBureauId() {
         return parentBureauId;
     }
 
-    public void setParentBureauId(Long parentBureauId) {
+    public void setParentBureauId(Integer parentBureauId) {
         this.parentBureauId = parentBureauId;
     }
+
+    /** getter setter*/
+
 
     public Integer getIsChild() {
         return isChild;

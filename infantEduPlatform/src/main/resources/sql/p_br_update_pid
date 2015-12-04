@@ -1,0 +1,56 @@
+CREATE OR REPLACE PROCEDURE p_br_update_pid
+  (
+    v_bid IN NUMBER,
+    v_pid IN NUMBER,
+    v_child IN NUMBER
+  ) IS
+declare
+  v_1 INTEGER ;----也可以在变量定义后赋值
+  BEGIN
+    select v_1 := count(*) from bureaurelation a
+    where a.parentbureauid = v_pid;
+
+    IF(v_1 > 0) THEN
+      BEGIN
+        update bureaurelation b
+          set ISCHILD = 1
+        where BUREAUID = v_pid;
+      END;
+    ELSE
+      BEGIN
+        UPDATE bureaurelation c
+          SET ISCHILD = 0
+        where BUREAUID = v_pid;
+      END;
+    END IF;
+    END p_br_update_pid;
+
+
+SELECT *
+FROM (SELECT
+        u.name,
+        tc.type AS ttype,
+        c.classname,
+        c.classid
+      FROM classinfo c
+        INNER JOIN teacherinclass tc
+          ON tc.classid = c.classid
+        INNER JOIN userinfo u
+          ON u.userid = tc.userid
+      WHERE c.classid = 17)
+      PIVOT (max(name)
+        FOR ttype
+        IN (1,
+          2,
+          3))
+
+
+
+
+
+
+
+
+
+
+

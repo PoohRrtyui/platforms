@@ -7,7 +7,7 @@ import java.util.Date;
  * 单位信息实体类
  */
 public class BureauInfo {
-    private Long organizationId;		/**数据编码，唯一编号，自增长*/
+    private Integer organizationId;		/**数据编码，唯一编号，自增长*/
     private String organizationCode;		/**单位机构代码*/
     private String bureauName;			/**单位名称，指学校主管单位标准名称，与公章一致*/
     private String shortName;		/**单位简称*/
@@ -31,8 +31,8 @@ public class BureauInfo {
     private String lastUpdatedBy;		/**最终修改人*/
 
 
-    private Long bureauId; /** 单位机构编码    */
-    private Long parentBureauId;   /** 所属主管单位编码     */
+    private Integer bureauId; /** 单位机构编码    */
+    private Integer parentBureauId;   /** 所属主管单位编码     */
     private Integer isChild;    /**是否有子单位，0：没有，1：有*/
 
     private String parentBureauName;
@@ -45,15 +45,17 @@ public class BureauInfo {
         this.parentBureauName = parentBureauName;
     }
 
-    /** getter setter*/
-
-    public Long getOrganizationId() {
+    public Integer getOrganizationId() {
         return organizationId;
     }
 
-    public void setOrganizationId(Long organizationId) {
+    public void setOrganizationId(Integer organizationId) {
         this.organizationId = organizationId;
     }
+
+    /** getter setter*/
+
+
 
     public String getOrganizationCode() {
         return organizationCode;
@@ -223,19 +225,19 @@ public class BureauInfo {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    public Long getBureauId() {
+    public Integer getBureauId() {
         return bureauId;
     }
 
-    public void setBureauId(Long bureauId) {
+    public void setBureauId(Integer bureauId) {
         this.bureauId = bureauId;
     }
 
-    public Long getParentBureauId() {
+    public Integer getParentBureauId() {
         return parentBureauId;
     }
 
-    public void setParentBureauId(Long parentBureauId) {
+    public void setParentBureauId(Integer parentBureauId) {
         this.parentBureauId = parentBureauId;
     }
 

@@ -57,7 +57,7 @@ var bureau = {
                 var html ;
                 $("#schoolContainer").empty();
                 for(var i in data){
-                    html='<div class="col-xs-5">'
+                    html='<div class="col-xs-4">'
                         +'<div class="box box-solid box-primary">'
                         +'<div class="box-header">'
                         +'<div>'
