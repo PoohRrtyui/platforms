@@ -1,0 +1,33 @@
+package com.xunyun.infanteduplatform.domain;
+
+import java.sql.Blob;
+
+public class SysImageRelation {
+  //机构代码
+  private String organizationId;
+  //模块Id
+  private long moduleId;
+  //图片Id(唯一编号)
+  private long imageId;
+
+  public String getOrganizationId() {
+    return organizationId;
+  }
+  public void setOrganizationId(String organizationId) {
+    this.organizationId = organizationId;
+  }
+  public long getModuleId() {
+    return moduleId;
+  }
+  public void setModuleId(long moduleId) {
+    this.moduleId = moduleId;
+  }
+  public long getImageId() {
+    return imageId;
+  }
+  public void setImageId(long imageId) {
+    this.imageId = imageId;
+  }
+  
+  
+}

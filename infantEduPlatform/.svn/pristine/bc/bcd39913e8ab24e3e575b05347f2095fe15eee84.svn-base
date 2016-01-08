@@ -1,0 +1,161 @@
+package com.xunyun.infanteduplatform.controller.department;
+
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.xunyun.infanteduplatform.domain.LoginUserInfo;
+import com.xunyun.infanteduplatform.domain.SysDepartmentInfo;
+import com.xunyun.infanteduplatform.domain.SysDepartmentRelation;
+import com.xunyun.infanteduplatform.domain.TreeEntity;
+import com.xunyun.infanteduplatform.service.DepartmentInfoService;
+import com.xunyun.infanteduplatform.service.DepartmentRelationService;
+
+
+@Controller @RequestMapping("departmentInfo") public class DepartmentInfoController {
+
+    @Resource private DepartmentInfoService departmentInfoService;
+
+    @Resource private DepartmentRelationService departmentRelationService;
+
+    public DepartmentInfoService getDepartmentInfoService() {
+        return departmentInfoService;
+    }
+
+    public void setDepartmentInfoService(DepartmentInfoService departmentInfoService) {
+        this.departmentInfoService = departmentInfoService;
+    }
+
+    // 页面跳转
+    @RequestMapping("/updatedepartment") public ModelAndView updatedepartment() {
+
+        return new ModelAndView("pages/departmentInfo/savedepartmentInfo");
+    }
+
+    // 初始加载页面
+    @RequestMapping("/show") public ModelAndView show() {
+
+        return new ModelAndView("pages/departmentInfo/departmentInfo");
+    }
+
+    // 查询一级部门
+    @ResponseBody @RequestMapping("/select") public List<TreeEntity> queryChannel(
+        @RequestParam(defaultValue = "0") int id,
+        @RequestParam(value = "schoolId", required = false) Integer schoolId) {
+
+        // HttpSession session = request.getSession();
+        //LoginUserInfo loginUserInfo = (LoginUserInfo) session.getAttribute("loginUserInfo");
+        int userid = schoolId;
+
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("id", id);
+        map.put("userid", userid);
+        List<TreeEntity> list = departmentRelationService.query(map);
+        return list;
+    }
+
+    // 查询部门详细信息
+    @ResponseBody @RequestMapping("/findById") public SysDepartmentInfo findById(
+        @RequestParam(defaultValue = "1") int id) {
+
+        return departmentInfoService.findById(id);
+    }
+
+    // 增加、修改查重
+    @ResponseBody @RequestMapping("/updateValidate") public int updateValidate(
+        @RequestParam(value = "schoolId", required = false) Integer schoolId, TreeEntity entity) {
+
+        //HttpSession session = request.getSession();
+        // LoginUserInfo loginUserInfo = (LoginUserInfo) session.getAttribute("loginUserInfo");
+        int id = schoolId;
+        entity.setUserid(id);
+        return departmentInfoService.updateValidate(entity);
+    }
+
+    // 增加、修改部门信息
+    @ResponseBody @RequestMapping("/addDepartmentInfo") public int addDepartmentRelation(
+        HttpServletRequest request, SysDepartmentInfo departmentInfo, @RequestParam(
+        defaultValue = "-1") int parentId,
+        @RequestParam(value = "schoolId", required = false) Integer schoolId, TreeEntity entity) {
+   /* try{
+    //需要捕获异常的代码
+    } catch (Exception e) {
+    }*/
+        //获取登陆用户信息
+        HttpSession session = request.getSession();
+        LoginUserInfo loginUserInfo = (LoginUserInfo) session.getAttribute("loginUserInfo");
+        String createdBy = loginUserInfo.getUserid().toString();
+        if (parentId != -1) {
+            int count = 0;
+            //departmentInfo.setFax("22222");
+            //departmentInfo.setEmail("33333@qq.com");
+            //departmentInfo.setOrderNo(10);
+            departmentInfo.setDeleteFlg(0);
+            //获取创建时间
+            departmentInfo.setCreationTime(Calendar.getInstance().getTime());
+            //获取最后修改时间
+            departmentInfo.setLastUpdateTime(Calendar.getInstance().getTime());
+            //获取最后修改人与创建人信息
+            departmentInfo.setCreatedBy(createdBy);
+            departmentInfo.setLastUpdatedBy(createdBy);
+            SysDepartmentRelation departmentRelation = new SysDepartmentRelation();
+
+            int id = schoolId;
+            departmentRelation.setBureauId(id);
+            departmentRelation.setParentDepartmentId(parentId);
+            departmentRelation.setIsChild(0);
+            count = departmentInfoService.addDepartmentRelation(departmentRelation, departmentInfo);
+            if (parentId != 0) {
+                count = departmentInfoService.updatePid(parentId);
+            }
+            return count;
+        } else {
+            departmentInfo.setLastUpdateTime(Calendar.getInstance().getTime());
+            departmentInfo.setLastUpdatedBy(createdBy);
+            int count = departmentInfoService.updateDepartmentInfo(departmentInfo);
+            return count;
+        }
+    }
+
+    //查询部门是否被用户使用中
+    @ResponseBody @RequestMapping("/selectCount") public int selectCount(Integer id) {
+
+        return departmentInfoService.selectCount(id);
+    }
+
+    //刷新树节点
+    @RequestMapping("/findCound") @ResponseBody public int findCound(Integer pId) {
+        int count = departmentInfoService.findCound(pId);
+        if (count == 0) {
+            departmentInfoService.update(pId);
+        }
+        return count;
+    }
+
+    // 删除部门信息
+    @RequestMapping("/deleteDepartmentInfo") @ResponseBody public int deleteDepartmentInfo(
+        Integer id, Integer pId) {
+        /**
+         *
+         * @Param
+         * @return 物理删除部门关联表信息
+         * */
+        departmentRelationService.deleteDepartmentRelation(id);
+        return departmentInfoService.deleteDepartmentInfo(id);
+    }
+
+    @RequestMapping(value = "/queryDeptBySchoolId", method = RequestMethod.POST) @ResponseBody
+    public List<SysDepartmentInfo> queryDeptBySchoolId(
+        @ModelAttribute(value="deptInfo")SysDepartmentInfo departmentInfo) {
+        return departmentInfoService.queryDeptBySchoolId(departmentInfo);
+    }
+}

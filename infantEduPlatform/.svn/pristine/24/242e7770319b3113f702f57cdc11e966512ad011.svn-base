@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.ParentingMapper">
+	<!--完成任务的家长名字-->
+	<select id="findByFinished" parameterType="Integer" resultType="java.lang.String">
+        select name from II_Replay r,ib_UserInfo i where ModuleId=#{bulletinId} and r.userid=i.userid
+    </select>
+    
+    <!--未完成任务的家长名字-->
+	<select id="findByUnfinished" parameterType="java.util.Map" resultType="java.lang.String">
+        select Name from (select o.userid from ib_USERINCLASS l,ib_UserInOrg o  where l.classId=#{classId} and l.organizationId=#{organizationId}
+         and o.userid=l.userid and UserType=16  MINUS select userid from II_Replay r where moduleId=#{bulletinId}) a,ib_UserInfo b
+          where a.userid=b.userid
+    </select>
+        
+</mapper>

@@ -1,0 +1,51 @@
+package com.xunyun.infanteduplatform.service;
+
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.xunyun.infanteduplatform.domain.SysUserInfo;
+import com.xunyun.infanteduplatform.domain.SysUserInorg;
+import com.xunyun.infanteduplatform.domain.SysUserLogin;
+import com.xunyun.infanteduplatform.persistent.RegisterMapper;
+
+@Service("register")
+public class RegisterService {
+  
+  @Resource
+  private RegisterMapper registerMapper;
+
+  public RegisterMapper getRegisterMapper() {
+    return registerMapper;
+  }
+
+  public void setRegisterMapper(RegisterMapper registerMapper) {
+    this.registerMapper = registerMapper;
+  }
+  
+  public int register(SysUserLogin login) {
+
+    return registerMapper.register(login);
+  }
+
+  public int updateValidate(Map<String,Object> map) {
+    
+    return registerMapper.updateValidate(map);
+  }
+  
+  public int register(SysUserInfo userInfo,SysUserInorg userInorg) {
+    int count = 0;
+    count=registerMapper.addUserInfo(userInfo);
+    count=registerMapper.addUserInOrg(userInorg);
+    return count;
+  }
+
+  public int registerValidate(Map<String, Object> map) {
+    
+    return registerMapper.registerValidate(map);
+  }
+
+}

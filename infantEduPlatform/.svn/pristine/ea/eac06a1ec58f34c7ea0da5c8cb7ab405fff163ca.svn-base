@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.LoginUserMapper">
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache" /> -->
+	<!-- <resultMap type="com.xunyun.infanteduplatform.domain.LoginUserInfo" id="loginUserInfoResultMap">
+			<result column="userid" property="userid" jdbcType="Integer"/>
+			<result column="username" property="username" jdbcType="VARCHAR"/>
+			<result column="nickname" property="nickname" jdbcType="VARCHAR"/>
+			<result column="NAME" property="NAME" jdbcType="VARCHAR"/>
+			<result column="gendercode" property="gendercode" jdbcType="Integer"/>
+			<result column="idtype" property="idtype" jdbcType="Integer"/>
+			<result column="idno" property="idno" jdbcType="VARCHAR"/>
+			<result column="birthday" property="birthday" jdbcType="VARCHAR"/>
+			<result column="mobile" property="mobile" jdbcType="VARCHAR"/>
+			<result column="email" property="email" jdbcType="VARCHAR"/>
+			<result column="photourl" property="photourl" jdbcType="VARCHAR"/>
+			<result column="organizationid" property="organizationid" jdbcType="VARCHAR"/>
+			<result column="organizationtype" property="organizationtype" jdbcType="VARCHAR"/>
+			<result column="usertype" property="usertype" jdbcType="VARCHAR"/>
+			<result column="isadmin" property="isadmin" jdbcType="VARCHAR"/>
+			<result column="departmentid" property="departmentid" jdbcType="VARCHAR"/>
+			<result column="teacherClassId" property="teacherClassId" jdbcType="VARCHAR"/>
+			<result column="teacherType" property="teacherType" jdbcType="VARCHAR"/>
+			<result column="studentClassId" property="studentClassId" jdbcType="VARCHAR"/>
+		</resultMap>-->
+	
+	<select id="findLoginUserById" resultType="com.xunyun.infanteduplatform.domain.LoginUserInfo" parameterType="com.xunyun.infanteduplatform.domain.LoginUserInfo">
+	      select ui.userid,ui.username,ui.nickname,ui.name,ui.gendercode,ui.idtype,
+			ui.idno,ui.birthday,ui.mobile,ui.email,ui.photourl,
+			uo.organizationid,uo.organizationtype,uo.usertype,uo.isadmin,
+			ud.departmentid,tc.classid AS teacherClassId,tc.type AS teacherType,
+			uc.classid AS studentClassId 
+			from userinfo ui
+			left join userinorg uo on uo.userid = ui.userid
+			left join userindept ud on ud.userid = ui.userid
+			left join teacherinclass tc on tc.userid = ui.userid
+			left join userinclass uc on uc.userid = ui.userid
+			where ui.userid = #{userid }
+	</select>
+</mapper>

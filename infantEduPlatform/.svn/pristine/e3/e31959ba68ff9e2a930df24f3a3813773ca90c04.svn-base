@@ -1,0 +1,19 @@
+package com.xunyun.infanteduplatform.domain.interaction;
+
+import java.sql.Blob;
+
+public class ImageModel {
+  // 图片内容
+  private Blob imageContent;
+
+  public Blob getImageContent() {
+    return imageContent;
+  }
+
+  public void setImageContent(Blob imageContent) {
+    this.imageContent = imageContent;
+  }
+
+ 
+
+}

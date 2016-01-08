@@ -1,0 +1,18 @@
+package com.xunyun.infanteduplatform.service;
+
+import com.xunyun.infanteduplatform.domain.AccountBinding;
+import com.xunyun.infanteduplatform.persistent.AccountLoginMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * 第三方登录Service
+ * Created by Pooh on 2015/12/30.
+ */
+@Service("accountLoginService")
+public class AccountLoginService {
+    @Autowired public AccountLoginMapper accountLoginMapper;
+    public AccountBinding queryAccount(AccountBinding accountBinding){
+        return accountLoginMapper.queryAccount(accountBinding);
+    }
+}

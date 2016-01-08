@@ -1,0 +1,24 @@
+package com.xunyun.infanteduplatform.persistent;
+
+import java.util.List;
+import java.util.Map;
+
+import com.xunyun.infanteduplatform.domain.ClassManageEntity;
+import com.xunyun.infanteduplatform.domain.SysDepartmentInfo;
+import com.xunyun.infanteduplatform.domain.SysDepartmentRelation;
+
+public interface DepartmentRelationMapper {
+//查询一级部门
+  public List<SysDepartmentInfo> findName(Map<String, Object> map);
+//添加部门信息
+  public int addDepartmentRelation(SysDepartmentRelation departmentRelation);
+  /*public List<SysDepartmentInfo> getClassAndDepList(int id, int pId);*/
+  public List<ClassManageEntity> getClassList(Integer id);
+  public List<SysDepartmentInfo> getClassAndDepList(Map<String, Integer> dataMap);
+  /**
+   * 
+   * @Param
+   * @return 物理删除部门关联表信息
+   * */
+  public int deletedepartmentrelation(Integer id);
+}

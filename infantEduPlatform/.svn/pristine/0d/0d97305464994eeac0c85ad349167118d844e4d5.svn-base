@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.DepartmentInfoMapper">
+	<!--查询部门详情信息-->
+	<select id="findById" parameterType="int" resultType="com.xunyun.infanteduplatform.domain.SysDepartmentInfo">
+		select DEPARTMENTNAME,DUTYPERSON,DESCRIPTION,TELEPHONE from departmentinfo where departmentid=#{id}
+	</select>
+	<!--增加、修改查重-->
+	<select id="updateValidate" parameterType="com.xunyun.infanteduplatform.domain.TreeEntity" resultType="int" >
+		select count(*) from departmentrelation a,departmentinfo b where b.DEPARTMENTID=a.DEPARTMENTID and a.PARENTDEPARTMENTID=#{pId} and b.DEPARTMENTNAME=#{name}	
+		<if test="name != null and name != ''">
+				and a.DEPARTMENTID!=#{id}
+		</if>	 
+	</select>	
+	<!--删除部门信息-->
+	<update id="deleteDepartmentInfo" parameterType="int">
+	    update departmentinfo set DELETEFLG=1 where DEPARTMENTID=#{id}
+	</update>
+	<!--修改部门信息-->
+	<update id="updateDepartmentInfo" parameterType="com.xunyun.infanteduplatform.domain.SysDepartmentInfo">
+	    update departmentinfo set DEPARTMENTNAME=#{DepartmentName},DUTYPERSON=#{DutyPerson},TELEPHONE=#{Telephone},DESCRIPTION=#{Description} where DEPARTMENTID=#{DepartmentId}
+	</update>
+	<!--修改节点状态-->
+	<update id="update" parameterType="int">
+		update departmentrelation set ISCHILD=0 where DEPARTMENTID=#{pId}
+	</update>
+		<!--增加时修改节点状态  -->
+	<update id="updatePid" parameterType="int">
+	    update departmentrelation set ISCHILD=1 where DEPARTMENTID=#{id}
+	</update>
+	<!--刷新树节点-->
+	<select id="findCound" parameterType="int" resultType="int">
+	    select count(*) from departmentrelation a,departmentinfo b where PARENTDEPARTMENTID=#{pId} and DeleteFlg=0 and a.DEPARTMENTID=b.DEPARTMENTID
+	</select>
+	<!--查询部门是否被用户使用中-->
+	<select id="selectCount" parameterType="int" resultType="int">
+	    select count(*) from userindept a,departmentinfo b where a.DEPARTMENTID=b.DEPARTMENTID and b.DEPARTMENTID=#{id}
+	</select>
+	<!--增加部门信息-->
+	<insert id="addDepartment" parameterType="com.xunyun.infanteduplatform.domain.SysDepartmentInfo">
+		<selectKey keyProperty="DepartmentId" resultType="int" order="BEFORE">
+			select SEQ_DEPARTMENTINFO.nextval from dual
+		</selectKey>
+	 	   insert into departmentinfo values(#{DepartmentId},#{DepartmentName},#{DutyPerson},#{Telephone},#{Fax},#{Email},#{OrderNo},#{DeleteFlg},#{CreationTime},#{CreatedBy},#{LastUpdateTime},#{LastUpdatedBy},#{Description})
+	</insert>
+
+</mapper>
+
+

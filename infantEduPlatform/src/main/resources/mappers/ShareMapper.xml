@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.ShareMapper">
+	<!-- 交流信息分享 -->
+	<insert id="shareDiscussion"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Share">
+		<![CDATA[
+		insert into II_Share (
+		shareId,
+		moduleId,
+		userId,
+		shareType,
+		shareTime)
+		values(
+		SEQ_share.nextval,
+		#{moduleId jdbcType=INTEGER},
+		#{userId jdbcType=INTEGER},
+		#{shareType jdbcType=INTEGER},
+		#{shareTime jdbcType=DATE}
+		)
+		]]>
+	</insert>
+</mapper>

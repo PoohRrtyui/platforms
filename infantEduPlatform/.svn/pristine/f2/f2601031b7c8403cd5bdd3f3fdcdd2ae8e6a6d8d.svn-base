@@ -1,0 +1,163 @@
+package com.xunyun.infanteduplatform.controller.headimage;
+
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.awt.image.CropImageFilter;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageFilter;
+import java.io.File;
+
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.xunyun.infanteduplatform.domain.LoginUserInfo;
+import com.xunyun.infanteduplatform.domain.SysUserInfo;
+import com.xunyun.infanteduplatform.service.LoginUserService;
+import com.xunyun.infanteduplatform.service.UserService;
+import com.xunyun.infanteduplatform.utils.FileUploadUtil;
+
+@Controller
+@RequestMapping("headimage")
+public class HeadImageController {
+  
+  @Autowired
+  private UserService userService;
+  
+  @Autowired
+  private LoginUserService loginUserService;
+  
+  private static final Integer SIZE1 = 30;
+  private static final Integer SIZE2 = 50;
+  private static final Integer SIZE3 = 180;
+
+  @RequestMapping(value = "/uploadHeadImage", method = RequestMethod.POST)
+  public ModelAndView uploadHeadImage(HttpServletRequest request,
+      @RequestParam("x") String x, @RequestParam("y") String y,
+      @RequestParam("w") String w, @RequestParam("h") String h,
+      @RequestParam("imgFile") MultipartFile imgFile) throws Exception {
+    
+        ModelAndView mav = new ModelAndView("pages/headimage/headimage");
+        
+        //绝对路径
+        String realPath = request.getSession().getServletContext().getRealPath("/");
+        String resourcePath = "resources\\uploadImages\\userLogo\\";
+        
+        try{
+          //获取用户id，文件夹名称更新到用户头像字段
+          HttpSession session = request.getSession();
+          LoginUserInfo loginUserInfo = (LoginUserInfo) session.getAttribute("loginUserInfo");
+          Integer userId = loginUserInfo.getUserid();
+          String idString = Integer.toString(userId);
+          
+          //http相对路径
+          String scheme = request.getScheme();
+          String serverName = request.getServerName();
+          int serverPort = request.getServerPort();
+          String contextPath = request.getContextPath();
+          String  rePath = "/resources/uploadImages/userLogo/";
+          
+          //获取用户头像文件夹
+          String imgFolder = "";
+          if("".equals(loginUserInfo.getPhotourl()) || loginUserInfo.getPhotourl() == null){
+            imgFolder = idString;
+          }else{
+            imgFolder = loginUserInfo.getPhotourl();
+          }
+          
+          SysUserInfo sInfo = new SysUserInfo();
+          sInfo.setUserid(userId);
+          sInfo.setPhotourl(idString);
+          userService.updateUser(sInfo);
+          
+          String loadPath = scheme+"://" + serverName + ":" + serverPort + contextPath 
+              + rePath + imgFolder + "/";
+          
+          if(FileUploadUtil.allowUpload(imgFile.getContentType())){
+            
+            //文件夹存在时候的路径
+            String existPath = realPath + resourcePath + imgFolder + "/";
+            //上传路径
+            File dir = new File(existPath);
+            if(!dir.exists()){
+              dir.mkdirs();
+            }
+            //上传
+            File file = new File(dir,"_src.jpg");
+            imgFile.transferTo(file);
+            
+            int imageX = Integer.parseInt(x);
+            int imageY = Integer.parseInt(y);
+            int imageH = Integer.parseInt(h);
+            int imageW = Integer.parseInt(w);
+            
+            try {
+              Image img;
+              ImageFilter cropFilter;
+              BufferedImage bi = ImageIO.read(new File(existPath + "_src.jpg"));//读取原图
+              
+              int srcWidth = bi.getWidth();
+              int srcHeight = bi.getHeight();
+              if (srcWidth >= imageW && srcHeight >= imageH) {//裁剪后的比原图小
+                Image image = bi.getScaledInstance(srcWidth, srcHeight, Image.SCALE_DEFAULT);
+                cropFilter = new CropImageFilter(imageX, imageY, imageW, imageH);
+                img = Toolkit.getDefaultToolkit().createImage(
+                    new FilteredImageSource(image.getSource(), cropFilter));
+                BufferedImage tag = new BufferedImage(imageW, imageH,
+                    BufferedImage.TYPE_INT_RGB);
+                Graphics g = tag.getGraphics();
+                g.drawImage(img, 0, 0, null);
+                g.dispose();
+                //输出裁剪后的图片
+                ImageIO.write(tag, "JPEG", new File(existPath + "_cut.jpg"));
+                File cutedFile = new File(existPath,"_cut.jpg");
+                //读取裁剪后的图片
+                BufferedImage cutedImage = ImageIO.read(new File(existPath + "_cut.jpg"));
+                
+                BufferedImage tag3 = new BufferedImage(SIZE3, SIZE3, BufferedImage.TYPE_INT_RGB);
+                tag3.getGraphics().drawImage(cutedImage.getScaledInstance(SIZE3, SIZE3, cutedImage.SCALE_SMOOTH),0,0,null);
+                ImageIO.write(tag3, "JPEG", new File(existPath+"180x180.jpg"));
+                
+                BufferedImage tag2 = new BufferedImage(SIZE2, SIZE2, BufferedImage.TYPE_INT_RGB);
+                tag2.getGraphics().drawImage(cutedImage.getScaledInstance(SIZE2, SIZE2, cutedImage.SCALE_SMOOTH),0,0,null);
+                ImageIO.write(tag2, "JPEG", new File(existPath+"50x50.jpg"));
+                
+                BufferedImage tag1 = new BufferedImage(SIZE1, SIZE1, BufferedImage.TYPE_INT_RGB);
+                tag1.getGraphics().drawImage(cutedImage.getScaledInstance(SIZE1, SIZE1, cutedImage.SCALE_SMOOTH),0,0,null);
+                ImageIO.write(tag1, "JPEG", new File(existPath+"30x30.jpg"));
+                
+                mav.addObject("pic1", loadPath + "180x180.jpg");
+                mav.addObject("pic2", loadPath + "50x50.jpg");
+                mav.addObject("pic3", loadPath + "30x30.jpg");
+                mav.addObject("imgFile", loadPath + "180x180.jpg");
+                
+                //删除裁剪后的图片
+                cutedFile.delete();
+              }
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
+            //删除原图
+            file.delete();
+          }
+          
+          session.removeAttribute(loginUserInfo.getPhotourl());
+          loginUserInfo.setPhotourl(idString);
+          session.getAttribute(loginUserInfo.getPhotourl());
+          
+        }catch(Exception e){
+          e.getMessage();
+        }
+      return mav;
+  }
+}

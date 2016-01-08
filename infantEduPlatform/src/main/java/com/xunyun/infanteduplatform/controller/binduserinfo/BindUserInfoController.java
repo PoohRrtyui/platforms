@@ -1,0 +1,247 @@
+package com.xunyun.infanteduplatform.controller.binduserinfo;
+
+import com.xunyun.infanteduplatform.domain.*;
+import com.xunyun.infanteduplatform.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 用户绑定信息Controller
+ * Created by Pooh on 2015/12/21.
+ */
+@Controller @RequestMapping(value = "bindUserInfo") public class BindUserInfoController {
+    @Autowired private UserInOrgService userInOrgService;
+
+    @Autowired private TeacherInClassService teacherInClassService;
+
+    @Autowired private UserInDepartmentService userInDepartmentService;
+
+    @Autowired private FamilyMembersService familyMembersService;
+
+    @Autowired private UserInClassService userInClassService;
+
+    @Autowired private BureauService bureauService;
+
+    @Autowired private SchoolService schoolService;
+
+    @Autowired
+    private LoginUserService loginUserService;
+    /**
+     * 添加用户身份信息
+     *
+     * @param sysUserInorg 用户所属机构实体类
+     * @param department   用户所属部门Id
+     * @param classes      用户所属班级Id
+     * @param studentId    学生Id
+     * @param relation     家长学生关系
+     * @return Integer
+     */
+
+    @RequestMapping(value = "/bind", method = RequestMethod.POST) @ResponseBody
+    public Integer bindUserInfo(@ModelAttribute(value = "userInOrg") SysUserInorg sysUserInorg,
+        @RequestParam(value = "department", required = false) Integer department,
+        @RequestParam(value = "classes", required = false) Integer classes,
+        @RequestParam(value = "student", required = false) Integer studentId,
+        @RequestParam(value = "relation", required = false) String relation,
+        @RequestParam(value = "bureau", required = false) Integer bureau,
+        @RequestParam(value = "school", required = false) Integer school,
+        HttpServletRequest request) {
+        Integer status = 0;
+        HttpSession session = request.getSession();
+        LoginUserInfo loginUserInfo = (LoginUserInfo) session.getAttribute("loginUserInfo");
+        sysUserInorg.setOrganizationId(school == null ? bureau : school);
+        sysUserInorg.setIsAuthentication(0);
+        sysUserInorg
+            .setOrganizationType(sysUserInorg.getUserType() == 1 && school == null ? "B" : "S ");
+        //在班级下的教师
+        if (sysUserInorg.getUserType() == 4) {
+            TeacherInClassEntity teacherInClass = new TeacherInClassEntity();
+            teacherInClass.setUserId(loginUserInfo.getUserid());
+            teacherInClass.setClassId(classes);
+            teacherInClass.setOrganizationId(sysUserInorg.getOrganizationId());
+            teacherInClass.setType(0);
+            if (sysUserInorg.getUserId() != null) {
+                if (classes == null) {
+                    teacherInClassService.deleteTeaInClass(loginUserInfo.getUserid());
+                } else {
+                    teacherInClassService.updateTeaInClass(teacherInClass);
+                }
+            } else {
+                if (classes != null) {
+                    teacherInClassService.saveTeaInClass(teacherInClass);
+                }
+            }
+        }
+        //部门下的教职工
+        else if (sysUserInorg.getUserType() == 1) {
+            SysUserInDepartment userInDepartment = new SysUserInDepartment();
+            userInDepartment.setUserId(loginUserInfo.getUserid());
+            userInDepartment.setOrganizationId(sysUserInorg.getOrganizationId());
+            userInDepartment.setDepartmentId(department);
+            if (sysUserInorg.getUserId() != null) {
+                if (department == null) {
+                    userInDepartmentService.deleteUserInDept(loginUserInfo.getUserid());
+                } else {
+                    userInDepartmentService.updateUserInDept(userInDepartment);
+                }
+            } else {
+                if (department != null) {
+                    userInDepartmentService.saveUserInDept(userInDepartment);
+                }
+            }
+        }
+        //学生
+        else if (sysUserInorg.getUserType() == 8) {
+            UserInClassEntity userInClass = new UserInClassEntity();
+            userInClass.setUserId(loginUserInfo.getUserid());
+            userInClass.setOrganizationId(sysUserInorg.getOrganizationId());
+            userInClass.setClassId(classes);
+            if (sysUserInorg.getUserId() != null) {
+                //修改学校
+                userInClassService.updateUserInClass(userInClass);
+            } else {
+                userInClassService.saveUserInClass(userInClass);
+            }
+        }
+        //家长
+        else if (sysUserInorg.getUserType() == 16) {
+            FamilyMembers familyMembers = new FamilyMembers();
+            familyMembers.setParentUserId(loginUserInfo.getUserid());
+            familyMembers.setStudentUserId(studentId);
+            familyMembers.setRelation(relation);
+            UserInClassEntity userInClass = new UserInClassEntity();
+            userInClass.setUserId(loginUserInfo.getUserid());
+            userInClass.setOrganizationId(sysUserInorg.getOrganizationId());
+            userInClass.setClassId(classes);
+            if (sysUserInorg.getUserId() != null) {
+                familyMembersService.updateFamilyMembers(familyMembers);
+            } else {
+                userInClassService.saveUserInClass(userInClass);
+                familyMembersService.saveFamilyMembers(familyMembers);
+            }
+        }
+        sysUserInorg.setUserId(loginUserInfo.getUserid());
+        //学校下的教师，单位员工，学校下的教职工
+        userInOrgService.updateUserInOrg(sysUserInorg);
+        session.setAttribute("loginUserInfo", loginUserService.findLoginUserById(loginUserInfo));
+        return status;
+    }
+
+    /**
+     * 删除用户身份信息
+     *
+     * @param sysUserInorg 用户所属机构信息 userId,userType
+     * @return Integer
+     */
+    @RequestMapping(value = "/deleteUserBoundInfo", method = RequestMethod.POST) @ResponseBody
+    public Integer deleteUserBoundInfo(
+        @ModelAttribute(value = "userInOrg") SysUserInorg sysUserInorg,
+        HttpServletRequest request) {
+        Integer status = 0;
+        //根据用户已经绑定的身份删除信息
+        if (sysUserInorg.getUserId() != null) {
+
+            if (sysUserInorg.getUserType() == 1) {//教职工，单位用户
+                //删除用户所属部门信息
+                userInDepartmentService.deleteUserInDept(sysUserInorg.getUserId());
+            } else if (sysUserInorg.getUserType() == 4) {//教师
+                //删除教师所属班级
+                teacherInClassService.deleteTeaInClass(sysUserInorg.getUserId());
+            } else if (sysUserInorg.getUserType() == 8) {//学生
+                //删除学生所属班级
+                userInClassService.deleteUserInClass(sysUserInorg.getUserId());
+            } else if (sysUserInorg.getUserType() == 16) {//家长
+                //删除学生家长关系
+                familyMembersService.delFamilyMembers(sysUserInorg.getUserId());
+            } else {
+                return 0;
+            }
+            sysUserInorg.setOrganizationId(0);
+            sysUserInorg.setOrganizationType("");
+            sysUserInorg.setUserType(0);
+            sysUserInorg.setIsAuthentication(0);
+            sysUserInorg.setStartTime(null);
+            sysUserInorg.setUserCode("");
+            sysUserInorg.setIsAdmin(0);
+            userInOrgService.updateUserInOrg(sysUserInorg);
+            HttpSession session = request.getSession();
+            session.invalidate();
+
+        } else {
+            return 0;
+        }
+        return status;
+    }
+
+    /**
+     * 查询班级下的用户
+     *
+     * @param classId  班级id
+     * @param userType 用户类型
+     * @return 用户List
+     */
+    @RequestMapping(value = "queryUsersInClass", method = RequestMethod.POST) @ResponseBody
+    public List<SysUserLogin> queryUsersInClass(@RequestParam(value = "classId") Integer classId,
+        @RequestParam(value = "userType") Integer userType) {
+        Map<String, Integer> map = new HashMap<>();
+        map.put("classId", classId);
+        map.put("userType", userType);
+        return userInClassService.queryUsersInClass(map);
+    }
+
+    @RequestMapping(value = "queryUserBoundInfo", method = RequestMethod.POST) @ResponseBody
+    public Map<String, Object> queryUserBoundInfo(HttpServletRequest request) {
+        Map<String, Object> map = new HashMap<>();
+        HttpSession session = request.getSession();
+        LoginUserInfo loginUserInfo = (LoginUserInfo) session.getAttribute("loginUserInfo");
+        Integer userId = loginUserInfo.getUserid();
+        SysUserInorg sysUserInorg = new SysUserInorg();
+        sysUserInorg.setUserId(loginUserInfo.getUserid());
+        sysUserInorg.setOrganizationId(loginUserInfo.getOrganizationid());
+        sysUserInorg.setUserType(loginUserInfo.getUsertype());
+        sysUserInorg.setOrganizationType(loginUserInfo.getOrganizationtype());
+        map.put("user", loginUserInfo);
+        if(sysUserInorg.getOrganizationId() != null){
+            BureauInfo bureauInfo = bureauService.queryBureauInfo(loginUserInfo.getOrganizationid());
+            map.put("bureau",bureauInfo);
+        }
+
+        /* 不是单位用户 */
+        if(sysUserInorg.getOrganizationType() != null &&!"B".equals(sysUserInorg.getOrganizationType())){
+            /*BureauInfo bureauInfo = bureauService.queryBureauInfo(sysUserInorg.getOrganizationId());
+            map.put("bureau",bureauInfo);*/
+            SchoolInfo schoolInfo = new SchoolInfo();
+            schoolInfo.setSchoolId(sysUserInorg.getOrganizationId());
+            schoolInfo =schoolService.querySchool(schoolInfo);
+            map.put("school",schoolInfo);
+            if (sysUserInorg.getUserType() == 1 && "S"
+                .equals(sysUserInorg.getOrganizationType())) {/* 教职工 */
+                SysDepartmentInfo deptInfo =
+                    userInDepartmentService.queryUserInDeptByUserId(sysUserInorg);
+                map.put("dept", deptInfo);
+            } else if (sysUserInorg.getUserType() == 4) {/* 老师 */
+                ClassManageEntity classes = teacherInClassService.queryClassByUserId(sysUserInorg);
+                map.put("classes", classes);
+            } else if (sysUserInorg.getUserType() == 8) {//学生
+                ClassManageEntity classes = userInClassService.queryClassByUserId(sysUserInorg);
+                map.put("classes",classes);
+            } else if (sysUserInorg.getUserType() == 16) {//家长
+                FamilyMembers familyMembers = familyMembersService.queryFamilyInfoByParentId(sysUserInorg);
+                sysUserInorg.setUserId(familyMembers.getStudentUserId());
+                sysUserInorg = userInOrgService.queryUserById(sysUserInorg);
+                map.put("student",sysUserInorg);
+                map.put("family",familyMembers);
+            }
+        }
+        return map;
+
+    }
+
+}

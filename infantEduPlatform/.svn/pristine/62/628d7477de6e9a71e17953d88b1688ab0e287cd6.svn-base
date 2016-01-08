@@ -1,0 +1,109 @@
+package com.xunyun.infanteduplatform.domain.interaction;
+
+import java.sql.Blob;
+import java.util.List;
+
+public class DiscussionModel {
+		//交流id
+		private Integer discussionId;
+		//交流内容
+		private String discussionContent;
+		//创建时间
+		private String creationTime;
+		//创建人
+		private String createdBy;
+		//回复总条数
+	    private Integer replyCount;
+	    //点赞总条数
+	    private Integer dynamicCount;
+	    //作者头像
+	    private Blob authorPhotoUrl;
+	    //点赞人
+		private List<DynamicModel> dynamicModelList;
+		//评论内容和时间
+		private List<DiscussionReplayView> discussionReplayViewList;
+		
+		
+
+		
+
+		public Integer getDiscussionId() {
+			return discussionId;
+		}
+
+		public void setDiscussionId(Integer discussionId) {
+			this.discussionId = discussionId;
+		}
+
+		public List<DiscussionReplayView> getDiscussionReplayViewList() {
+			return discussionReplayViewList;
+		}
+
+		public void setDiscussionReplayViewList(
+				List<DiscussionReplayView> discussionReplayViewList) {
+			this.discussionReplayViewList = discussionReplayViewList;
+		}
+
+		public String getDiscussionContent() {
+			return discussionContent;
+		}
+
+		public void setDiscussionContent(String discussionContent) {
+			this.discussionContent = discussionContent;
+		}
+
+
+
+		public String getCreationTime() {
+			return creationTime;
+		}
+
+		public void setCreationTime(String nowDate) {
+			this.creationTime = nowDate;
+		}
+
+		public String getCreatedBy() {
+			return createdBy;
+		}
+
+		public void setCreatedBy(String createdBy) {
+			this.createdBy = createdBy;
+		}
+
+
+		public Integer getReplyCount() {
+			return replyCount;
+		}
+
+		public void setReplyCount(Integer replyCount) {
+			this.replyCount = replyCount;
+		}
+
+		public Integer getDynamicCount() {
+			return dynamicCount;
+		}
+
+		public void setDynamicCount(Integer dynamicCount) {
+			this.dynamicCount = dynamicCount;
+		}
+
+		public Blob getAuthorPhotoUrl() {
+			return authorPhotoUrl;
+		}
+
+		public void setAuthorPhotoUrl(Blob authorPhotoUrl) {
+			this.authorPhotoUrl = authorPhotoUrl;
+		}
+
+		public List<DynamicModel> getDynamicModelList() {
+			return dynamicModelList;
+		}
+
+		public void setDynamicModelList(List<DynamicModel> dynamicModelList) {
+			this.dynamicModelList = dynamicModelList;
+		}
+
+		
+	
+		
+}

@@ -1,0 +1,97 @@
+package com.xunyun.infanteduplatform.domain.interaction;
+
+public class UserInfo {
+  private String userName;
+  private String nickName;
+  private String name;
+  private Integer genderCode;
+  private String idNo;
+  private String birthday;
+  private String mobile;
+  private String telephone;
+  private String email;
+  private String qq;
+  private String description;
+  private byte[] ImageContent;
+  private String photoUrl;
+  
+  
+  public byte[] getImageContent() {
+    return ImageContent;
+  }
+  public void setImageContent(byte[] imageContent) {
+    ImageContent = imageContent;
+  }
+  public String getUserName() {
+    return userName;
+  }
+  public void setUserName(String userName) {
+    this.userName = userName;
+  }
+  public String getNickName() {
+    return nickName;
+  }
+  public void setNickName(String nickName) {
+    this.nickName = nickName;
+  }
+  public String getName() {
+    return name;
+  }
+  public void setName(String name) {
+    this.name = name;
+  }
+  public Integer getGenderCode() {
+    return genderCode;
+  }
+  public void setGenderCode(Integer genderCode) {
+    this.genderCode = genderCode;
+  }
+  public String getIdNo() {
+    return idNo;
+  }
+  public void setIdNo(String idNo) {
+    this.idNo = idNo;
+  }
+  public String getBirthday() {
+    return birthday;
+  }
+  public void setBirthday(String birthday) {
+    this.birthday = birthday;
+  }
+  public String getMobile() {
+    return mobile;
+  }
+  public void setMobile(String mobile) {
+    this.mobile = mobile;
+  }
+  public String getTelephone() {
+    return telephone;
+  }
+  public void setTelephone(String telephone) {
+    this.telephone = telephone;
+  }
+  public String getEmail() {
+    return email;
+  }
+  public void setEmail(String email) {
+    this.email = email;
+  }
+  public String getQq() {
+    return qq;
+  }
+  public void setQq(String qq) {
+    this.qq = qq;
+  }
+  public String getDescription() {
+    return description;
+  }
+  public void setDescription(String description) {
+    this.description = description;
+  }
+  public String getPhotoUrl() {
+    return photoUrl;
+  }
+  public void setPhotoUrl(String photoUrl) {
+    this.photoUrl = photoUrl;
+  }
+}

@@ -1,0 +1,32 @@
+/**
+ * Created by Administrator on 2015/12/3.
+ * 单位操作页面js
+ */
+
+$(function(){
+    $('input').iCheck({
+        labelHover : false,
+        cursor : true,
+        checkboxClass : 'icheckbox_square-blue',
+        radioClass : 'iradio_square-blue',
+        increaseArea : '20%'
+    });
+
+});
+
+$("#bureauAdd").on("click",function(){
+    bureauAdd();
+});
+
+function bureauAdd(){
+    $.ajax({
+        async:true,
+        type:"POST",
+        url:"bureau/saveBureauInfo",
+        data:$("#bureauForm").serialize(),
+        dataType:"JSON",
+        success:function(){
+            layer.msg('保存成功', {icon: 6});
+        }
+    });
+}

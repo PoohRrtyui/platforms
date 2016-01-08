@@ -1,0 +1,39 @@
+package com.xunyun.infanteduplatform.persistent;
+
+import java.util.List;
+
+import com.xunyun.infanteduplatform.domain.SysUserInDepartment;
+import com.xunyun.infanteduplatform.domain.SysUserInfo;
+import com.xunyun.infanteduplatform.domain.SysUserInorg;
+import com.xunyun.infanteduplatform.domain.TeacherInClassEntity;
+import com.xunyun.infanteduplatform.domain.UserInClassEntity;
+
+public interface UserMapper {
+
+	public SysUserInfo getUserByUsername(String username);
+
+  public List<SysUserInfo> queryUserBySId(Integer schoolId);
+
+  public List<SysUserInfo> queryUserByCId(Integer treeId);
+
+  public List<SysUserInfo> queryStuByCId(Integer treeId);
+
+  public List<SysUserInfo> queryUserByDId(Integer treeId);
+
+  public Integer delUserById(Integer userId);
+
+  public Integer delUOrgById(Integer userId);
+
+  public Integer delUClassById(Integer userId);
+
+  public Integer delTClassById(Integer userId);
+
+  public Integer delUDepbyId(Integer userId);
+  
+  public Integer delLogById(Integer userId);
+  
+  public SysUserInfo findUserById (Integer userId);
+  
+  public Integer updateUser(SysUserInfo sInfo);
+
+}

@@ -1,0 +1,166 @@
+<%--
+  Created by IntelliJ IDEA.
+  User: PoohD
+  Date: 2015/12/14
+  Time: 11:28
+  用户绑定信息页面
+--%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+         pageEncoding="UTF-8" %>
+<%@ taglib prefix="tiles" uri="http://tiles.apache.org/tags-tiles" %>
+<tiles:insertDefinition name="defaultTemplate">
+    <tiles:putAttribute name="body">
+        <link rel="stylesheet" href="static/plugins/bootstrap-select/css/bootstrap-select.css">
+        <link rel="stylesheet" href="static/plugins/iCheck/square/blue.css">
+        <script src="static/plugins/layer/layer.js"></script>
+        <section class="content-header">
+            <h1>
+                绑定身份信息
+            </h1>
+        </section>
+
+        <section class="content col-xs-10">
+            <div class="box">
+                <div class="box-body">
+                    <div class="btn-group">
+                        <div class="col-sm-4">
+                            <span disabled="disabled" id="isAuthentication"></span>
+                        </div>
+                        <button id="delUserBound" type="button" class="btn btn-info">删除身份信息
+                        </button>
+                    </div>
+                    <div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-10 box box-primary ">
+                <div class="box-body box-profile">
+
+
+                    <form id="bindUserForm" class="form-horizontal">
+                        <div class="form-group">
+
+                            <label for="radio-1" class="col-sm-2 control-label">身份</label>
+                                <input type="hidden" id="userId" name="userId">
+                                <span id="idInfo"></span>
+                            <div class="col-sm-10" id="identity">
+                                <div class="iradio_square-blue">
+                                    <input class="required" type="radio" id="radio-1"
+                                           name="userType" value="1">
+                                </div>
+                                <label for="radio-1" class="">单位员工</label>
+
+                                <div class="iradio_square-blue">
+                                    <input class="required" type="radio" id="radio-2"
+                                           name="userType" value="4">
+                                </div>
+                                <label for="radio-2" class="">老师</label>
+
+                                <div class="iradio_square-blue">
+                                    <input class="required" type="radio" id="radio-3"
+                                           name="userType" value="1">
+                                </div>
+                                <label for="radio-3" class="">教职工</label>
+
+                                <div class="iradio_square-blue">
+                                    <input class="required" type="radio" id="radio-4"
+                                           name="userType" value="16">
+                                </div>
+                                <label for="radio-4" class="">家长</label>
+
+                                <div class="iradio_square-blue">
+                                    <input class="required" type="radio" id="radio-5"
+                                           name="userType" value="8">
+                                </div>
+                                <label for="radio-5" class="">学生</label>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group" id="organization">
+                            <label for="bureau" class="col-sm-2 control-label">所属机构</label>
+
+                            <div class="col-sm-3">
+                                <select id="bureau" name="bureau" class="selectpicker "
+                                        data-live-search="true" title='单位'>
+                                </select>
+                            </div>
+                            <div class="col-sm-3">
+                                <select id="school" name="school" class="selectpicker "
+                                        data-live-search="true" title='学校'>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="schoolOrg">
+                            <label for="department" class="col-sm-2 control-label"></label>
+                            <div class="col-sm-3">
+                                <select id="department" name="department" class="selectpicker "
+                                        data-live-search="true" title='部门'>
+                                </select>
+                            </div>
+                            <div class="col-sm-3">
+                                <select id="classes" name="classes" class="selectpicker "
+                                        data-live-search="true" title='班级'>
+                                </select>
+                            </div>
+                            <div class="col-sm-3">
+                                <select id="student" name="student" class="selectpicker "
+                                        data-live-search="true" title='学生'>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" id="code">
+                            <label for="userCode" class="col-sm-2 control-label">工号</label>
+
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" id="userCode" name="userCode"
+                                       placeholder="工号">
+                            </div>
+                        </div>
+                        <div class="form-group" id="relation">
+                            <label for="relation" class="col-sm-2 control-label">与子女关系</label>
+
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control"  name="relation"
+                                       placeholder="与子女关系">
+                            </div>
+                        </div>
+                        <div class="form-group" id="timeIntoOrg">
+                            <label for="relation" class="col-sm-2 control-label">加入机构时间</label>
+
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" id="startTime" name="startTime"
+                                       placeholder="加入机构时间">
+                            </div>
+                        </div>
+
+                        <%--<div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox"> I agree to the <a href="#">terms and
+                                        conditions</a>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>--%>
+                        <div class="form-group" id="saveBoundInfo">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <button id="saveUserBoundInfo" type="button" class="btn btn-danger">保存</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+        <%--<script src="static/plugins/jquery.steps-1.1.0/jquery.cookie-1.3.1.js"></script>--%>
+        <script src="static/plugins/iCheck/icheck.min.js"></script>
+        <script type="text/javascript"
+                src="static/plugins/bootstrap-select/js/bootstrap-select.js"></script>
+        <script src="static/js/bindUserInfo/bindUserInfo.js"></script>
+
+    </tiles:putAttribute>
+</tiles:insertDefinition>
+

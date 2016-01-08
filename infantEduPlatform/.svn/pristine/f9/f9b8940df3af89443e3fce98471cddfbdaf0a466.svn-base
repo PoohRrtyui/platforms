@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.MessageInfoMapper">
+	<!-- 消息列表获取 （自用）-->
+	<select id="messageList"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Message"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Message">
+		<![CDATA[
+			SELECT b.*FROM (
+			SELECT a.*
+			,rownum AS rownumber 
+			FROM (select 
+			distinct c.sendOutUserId,
+			c.receiveUserId,
+			d.name as receiveName,
+			count(*) over() dataCount
+			from II_Message c
+			left join IB_userInfo d ON c.receiveUserId=d.userId
+			where c.sendOutUserId=#{sendOutUserId jdbcType=INTEGER} 
+					) a WHERE rownum <= #{endNumber jdbcType=INTEGER} 	
+			) b	WHERE b.rownumber >= #{startNumber jdbcType=INTEGER} 
+		]]>
+	</select>
+	
+	<!-- 消息列表获取 -->
+	<select id="selectMessageList"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Message"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Message">
+		<![CDATA[
+			select 
+			distinct c.sendOutUserId,
+			c.receiveUserId,
+			d.name as receiveName
+			from II_Message c
+			left join IB_userInfo d ON c.receiveUserId=d.userId
+			where c.sendOutUserId=#{sendOutUserId jdbcType=INTEGER} 
+		]]>
+	</select>
+
+	<!-- 消息信息获取（自用） -->
+	<select id="querymessageInfo"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Message"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Message">
+		<![CDATA[
+		SELECT b.*FROM (
+			SELECT a.*
+			,rownum AS rownumber 
+			FROM (select 
+			a.sendoutUserId, 
+       		b.name as sendoutName,
+        	a.receiveUserId,
+       		c.name as receiveName,
+        	a.content,
+        	a.sendoutTime,  
+        	count(*) over() dataCount
+        	FROM II_MESSAGE a
+        	LEFT JOIN IB_UserInfo b ON a.sendoutUserId= b.userId
+       		LEFT JOIN IB_UserInfo c ON a.receiveUserId= c.userId 
+			where (a.sendoutuserid=#{sendOutUserId jdbcType=INTEGER}
+			 and a.receiveuserid=#{receiveUserId jdbcType=INTEGER})
+			 or  (a.sendoutuserid=#{receiveUserId jdbcType=INTEGER}
+			  and a.receiveuserid=#{sendOutUserId jdbcType=INTEGER}) 
+			  ORDER BY a.sendoutTime desc
+					) a WHERE rownum <= #{endNumber jdbcType=INTEGER} 	
+			) b	WHERE b.rownumber >= #{startNumber jdbcType=INTEGER} 
+		]]>
+	</select>
+	
+	<!-- 消息信息获取 -->
+	<select id="selectmessageInfo"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Message"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Message">
+		<![CDATA[
+			SELECT a.*
+			,rownum AS rownumber 
+			FROM (select 
+			a.sendoutUserId, 
+       		b.name as sendoutName,
+        	a.receiveUserId,
+       		c.name as receiveName,
+        	a.content,
+        	a.sendoutTime
+        	FROM II_MESSAGE a
+        	LEFT JOIN IB_UserInfo b ON a.sendoutUserId= b.userId
+       		LEFT JOIN IB_UserInfo c ON a.receiveUserId= c.userId 
+			where (a.sendoutuserid=#{sendOutUserId jdbcType=INTEGER}
+			 and a.receiveuserid=#{receiveUserId jdbcType=INTEGER})
+			 or  (a.sendoutuserid=#{receiveUserId jdbcType=INTEGER}
+			  and a.receiveuserid=#{sendOutUserId jdbcType=INTEGER}) 
+			  ]]>
+			  <if test="messageId > 0">
+			<if test="direction == 1">
+				<![CDATA[ 
+	                AND c.messageId > #{messageId} 
+	           ]]>
+			</if>
+			<if test="direction == 0">
+				<![CDATA[ 
+	                AND c.messageId < #{messageId} 
+	           ]]>
+			</if>
+		</if>
+			  <![CDATA[
+			  ORDER BY a.messageId desc
+					) a WHERE rownum <= #{count jdbcType=INTEGER} 	
+		]]>
+	</select>
+
+	<!-- 消息信息删除 -->
+	<delete id="deleteMessage"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Message">
+		<![CDATA[
+			delete II_Message a where 
+			(a.sendoutuserid=#{sendOutUserId jdbcType=INTEGER}
+			 and a.receiveuserid=#{receiveUserId jdbcType=INTEGER})
+			 or  (a.sendoutuserid=#{receiveUserId jdbcType=INTEGER}
+			  and a.receiveuserid=#{sendOutUserId jdbcType=INTEGER})
+		]]>
+	</delete>
+	
+	<!-- 消息信息增加 -->
+	<insert id="insertMessage"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Message">
+		<![CDATA[
+			insert into II_Message(messageId,sendoutuserid,receiveuserid,sendoutTime,content,messageType) values
+			(SEQ_MESSAGE.nextval,#{sendOutUserId},#{receiveUserId},#{sendOutTime},#{content},0)
+		]]>
+	</insert>
+</mapper>

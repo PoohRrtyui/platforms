@@ -1,0 +1,235 @@
+package com.xunyun.infanteduplatform.controller.interaction.bulletin;
+
+import java.sql.Blob;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.xunyun.infanteduplatform.domain.interaction.Bulletin;
+import com.xunyun.infanteduplatform.domain.interaction.Image;
+import com.xunyun.infanteduplatform.domain.interaction.ImageRelation;
+import com.xunyun.infanteduplatform.service.AppInfoService;
+import com.xunyun.infanteduplatform.service.BulletinService;
+import com.xunyun.infanteduplatform.utils.DateUtils;
+
+@Controller("bulletinInfo")
+@RequestMapping("bulletinInfo")
+public class BulletinController {
+  @Autowired
+  private BulletinService bulletinService;
+
+  @Autowired
+  private AppInfoService appInfoService;
+
+  /**
+   * @author lpp 方法描述：公告列表获取
+   */
+  @RequestMapping(value = "/queryBulletinList")
+  @ResponseBody
+  public Map<String, Object> queryBulletinList(String appCode, Integer organizationId,
+      Integer classId, @RequestParam(defaultValue = "1") Integer pageIndex, @RequestParam(
+          defaultValue = "10") Integer pageSize) {
+    Map<String, Object> map = new HashMap<String, Object>();
+
+    if (appCode == null || "".equals(appCode)) {
+      map.put("state", "error");
+      map.put("message", "应用状态为空，获取信息失败");
+      map.put("data", "");
+
+    } else if (!appInfoService.findByAppCode(appCode)) {
+      map.put("state", "error");
+      map.put("message", "应用状态为非开启状态，无权获取用户信息！");
+      map.put("data", "");
+
+    } else if (organizationId == 0) {
+      map.put("state", "error");
+      map.put("message", "机构代码为空，查询失败！");
+      map.put("data", "");
+
+    } else if (classId == null) {
+      map.put("state", "error");
+      map.put("message", "班级Id为空，查询失败！");
+      map.put("data", "");
+
+    } else {
+      // 开始条数
+      int startNumber = pageSize * (pageIndex - 1) + 1;
+      // 结束条数
+      int endNumber = pageSize * pageIndex;
+      // 总条数
+      int dataCount = 0;
+      // 声明对象
+      Bulletin item = new Bulletin();
+      // 开始条数
+      item.setStartNumber(startNumber);
+      // 结束条数
+      item.setEndNumber(endNumber);
+      // 机构代码
+      item.setOrganizationId(organizationId);
+      // 班级id
+      item.setClassId(classId);
+      String creationTime = DateUtils.getTimeString(item.getCreationTime());
+      // 获取数据
+      List<Bulletin> listData = bulletinService.queryBulletinList(item);
+      // 数据不为空，取总数
+      if (listData != null && listData.size() > 0) {
+        dataCount = listData.get(0).getDataCount();
+      }
+      // 计算总页数
+      int pageCount = (int) Math.ceil((double) dataCount / pageSize);
+      // 状态
+      map.put("state", "success");
+      // 提示信息
+      map.put("message", "");
+      // 数据列表
+      map.put("data", listData);
+      // 当前页数
+      map.put("pageIndex", pageIndex);
+      // 每页显示数
+      map.put("pageSize", pageSize);
+      // 总页数
+      map.put("pageCount", pageCount);
+      // 总条数
+      map.put("dataCount", dataCount);
+
+    }
+    return map;
+  }
+
+  /**
+   * @author lpp 方法描述：公告信息查询
+   */
+  @RequestMapping(value = "/queryBulletinInfo")
+  @ResponseBody
+  public Map<String, Object> queryBulletinInfo(String appCode, Integer bulletinId) {
+    Map<String, Object> map = new HashMap<String, Object>();
+    // 判断应用状态
+    if (appCode == null || "".equals(appCode)) {
+      map.put("state", "error");
+      map.put("message", "应用状态为空，获取信息失败");
+      map.put("data", "");
+
+    } else if (!appInfoService.findByAppCode(appCode)) {
+      map.put("state", "error");
+      map.put("message", "应用状态为非开启状态，无权获取用户信息！");
+      map.put("data", "");
+
+    } else {
+      // 查询公告信息
+      Bulletin item = new Bulletin();
+      item.setBulletinId(bulletinId);
+      item = bulletinService.queryByBulletinId(bulletinId);
+      // 查询图片信息
+      ImageRelation sysImageRelation = new ImageRelation();
+      sysImageRelation.setModuleId(bulletinId);
+      List<Image> listPicture = bulletinService.queryImageList(sysImageRelation);
+      List<Blob> list = new ArrayList<Blob>();
+      // 判断图片内容是否为空，不为空的情况下，查询出图片内容
+      for (Image sysImage : listPicture) {
+        if (sysImage.getImageContent() == null) {
+
+        } else {
+          list.add(sysImage.getImageContent());
+        }
+      }
+      // 状态
+      map.put("state", "success");
+      // 提示信息
+      map.put("message", "");
+      // 返回数据
+      map.put("data", item);
+      // 返回图片信息
+      map.put("imageList", list);
+    }
+    return map;
+  }
+
+  /**
+   * @author lpp 方法描述：公告信息保存
+   */
+  /*@RequestMapping(value = "/addBulletinInfo")
+  @ResponseBody
+  public Map<String, Object> saveBulletinInfo(String appCode, Integer organizationId, String title,
+      String bulletinContent, Integer userId, Blob imageContent) {
+    Map<String, Object> map = new HashMap<>();
+    if (appCode == null && "".equals(appCode)) {
+      map.put("state", "error");
+      map.put("message", "应用状态为空，获取信息失败");
+      map.put("data", "");
+
+    } else if (!appInfoService.findByAppCode(appCode)) {
+      map.put("state", "error");
+      map.put("message", "应用状态为非开启状态，无权获取用户信息！");
+      map.put("data", "");
+
+    } else if (organizationId == null) {
+      map.put("state", "error");
+      map.put("message", "机构代码为空，传入参数有误！");
+      map.put("data", "");
+
+    } else if (bulletinContent == null && "".equals(bulletinContent)) {
+      map.put("state", "error");
+      map.put("message", "公告内容不能为空！");
+      map.put("data", "");
+
+    } else if (userId == 0) {
+      map.put("state", "error");
+      map.put("message", "用户Id为0，传入参数有误！");
+      map.put("data", "");
+
+    } else {
+      // 声明对象
+      Bulletin sysBulletin = new Bulletin();
+      // 获取机构代码
+      sysBulletin.setOrganizationId(organizationId);
+      // 获取标题
+      sysBulletin.setTitle(title);
+      // 获取公告内容
+      sysBulletin.setBulletinContent(bulletinContent);
+      // 当前时间
+      Date nowDate = Calendar.getInstance().getTime();
+      // 获取创建时间
+      sysBulletin.setCreationTime(nowDate);
+      // 获取修改时间
+      sysBulletin.setLastUpdateTime(nowDate);
+      // 获取创建人
+      sysBulletin.setCreatedBy(Integer.toString(userId));
+      // 获取修改人
+      sysBulletin.setLastUpdatedBy(Integer.toString(userId));
+      // 插入数据
+      bulletinService.addBulletinInfo(sysBulletin);
+      // 返回添加公告的公告Id
+      Integer moduleId = sysBulletin.getBulletinId();
+      Image image = new Image();
+      List<Image> listPicture = bulletinService.addImageList(image);
+      List<Blob> list = new ArrayList<Blob>();
+      
+      // 判断图片内容是否为空，不为空的情况下，查询出图片内容
+      for (Image sysImage : listPicture) {
+        if (sysImage.getImageContent() == null) {
+
+        } else {
+          list.add(sysImage.getImageContent());
+        }
+      }
+      // 声明对象
+      ImageRelation sysImageRelation = new ImageRelation();
+      // 获取模块Id
+      sysImageRelation.setModuleId(moduleId);
+      // 状态
+      map.put("state", "success");
+      // 提示信息
+      map.put("message", "保存成功!");
+    }
+    return map;
+  }*/
+}

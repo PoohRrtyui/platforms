@@ -1,0 +1,27 @@
+package com.xunyun.infanteduplatform.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.xunyun.infanteduplatform.domain.ClassManageEntity;
+import com.xunyun.infanteduplatform.domain.SysUserInorg;
+import com.xunyun.infanteduplatform.persistent.ClassManageMapper;
+
+@Service("classmanageservice")
+public class ClassManageService {
+  
+  @Autowired
+  private ClassManageMapper classmanagemapper;
+  
+ //初始查询班级 
+  public List queryClass(ClassManageEntity classmanageentity) {
+     return this.classmanagemapper.queryclass(classmanageentity);
+  }
+  
+  //添加班级时查询教师信息
+  public List queryClassTeacher(SysUserInorg sysuserinorg){
+     return this.classmanagemapper.queryclassteacher(sysuserinorg);
+  }
+}

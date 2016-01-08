@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.DiscussionInfoMapper">
+	<!-- 交流列表获取 -->
+	<select id="queryDiscussionInfo" parameterType="com.xunyun.infanteduplatform.domain.interaction.Discussion"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Discussion">
+		<![CDATA[
+			SELECT b.*FROM (
+			SELECT a.*
+			,rownum AS rownumber 
+			FROM (select 
+			c.discussionId,
+			c.discussionContent,
+			c.createdBy,
+			c.creationTime as creationTime,
+			nvl(d.replyCount,0) as replyCount,
+			nvl(e.dynamiCount,0) as dynamicCount,
+			f.PhotoUrl AS authorPhotoUrl,
+			count(*) over() dataCount
+			from II_Discussion c
+			left join (
+			select targetId,count(*) AS replyCount from II_DiscussionReplay
+			group by targetId
+			) d on d.targetId = c.discussionId
+			left join (
+			select ModuleId,count(*) AS dynamiCount from II_Dynamic where dynamicType= 7
+			group by moduleId
+			) e on e.moduleId = c.discussionId
+			left join IB_userInfo f ON c.CreatedBy=f.userId
+			where c.deleteflg = 0 
+			and c.Subject=#{subject jdbcType=VARCHAR} 
+			and c.OrganizationId=#{organizationId jdbcType=INTEGER} 
+			ORDER BY DISCUSSIONID
+					) a WHERE rownum <= #{endNumber jdbcType=INTEGER} 	
+			) b	WHERE b.rownumber >= #{startNumber jdbcType=INTEGER} 
+		]]> 
+	</select>
+	
+	<!-- 获取点赞用户的头像 -->
+	<select id="queryDynamicInfo" parameterType="com.xunyun.infanteduplatform.domain.interaction.Dynamic"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Dynamic">
+		<![CDATA[
+		select a.PraiseId,
+		a.UserId,
+		b.PhotoUrl as dynamicPhotoUrl
+		from II_Dynamic a
+		left join  ib_UserInfo b on a.UserId=b.UserId
+		where a.moduleId=#{moduleId jdbcType=INTEGER} and a.dynamicType=7
+		]]> 
+	</select>
+	
+	
+	
+	<!-- 交流信息保存 -->
+	<insert id="publishMessage" parameterType="com.xunyun.infanteduplatform.domain.interaction.Discussion">
+		<![CDATA[
+		insert into II_Discussion (
+		discussionId,
+		organizationId,
+		subject,
+		discussionContent,
+		createdBy,
+		lastUpdatedBy,
+		creationTime,
+		lastUpdateTime,
+		deleteFlg,
+		discussionLevel
+		)
+		values(
+		SEQ_dission.nextval,
+		#{organizationId jdbcType=INTEGER},
+		#{subject jdbcType=VARCHAR},
+		#{discussionContent jdbcType=VARCHAR},
+		#{createdBy jdbcType=VARCHAR},
+		#{lastUpdatedBy jdbcType=VARCHAR},
+		#{creationTime jdbcType=DATE},
+		#{lastUpdateTime jdbcType=DATE},
+		0,
+		1
+		)
+		]]> 
+	</insert>
+	
+<!-- 	我的社区（该用户发表的交流信息） -->
+    <select id="mypublishCollect" parameterType="com.xunyun.infanteduplatform.domain.interaction.Discussion"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Discussion">
+		<![CDATA[
+			SELECT b.*FROM (
+			SELECT a.*
+			,rownum AS rownumber 
+			FROM (select 
+			c.discussionId,
+			c.discussionContent,
+			c.createdBy,
+			d.name as authorName,
+			c.creationTime,
+			count(*) over() dataCount
+			from II_Discussion c
+			left join IB_userInfo d ON c.CreatedBy=d.userId
+			where c.deleteflg = 0 
+			and c.createdBy=#{createdBy} 
+			ORDER BY DISCUSSIONID
+					) a WHERE rownum <= #{endNumber jdbcType=INTEGER} 	
+			) b	WHERE b.rownumber >= #{startNumber jdbcType=INTEGER} 
+		]]> 
+    </select>
+    
+    
+</mapper>

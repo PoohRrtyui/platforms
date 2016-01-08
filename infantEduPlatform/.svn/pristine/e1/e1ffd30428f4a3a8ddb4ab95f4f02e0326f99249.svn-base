@@ -1,0 +1,247 @@
+package com.xunyun.infanteduplatform.controller.interaction.growth;
+
+import java.io.File;
+import java.sql.Blob;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Resource;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import com.xunyun.infanteduplatform.domain.SysUserInfo;
+import com.xunyun.infanteduplatform.domain.interaction.Bulletin;
+import com.xunyun.infanteduplatform.domain.interaction.Growth;
+import com.xunyun.infanteduplatform.domain.interaction.Image;
+import com.xunyun.infanteduplatform.domain.interaction.ImageRelation;
+import com.xunyun.infanteduplatform.service.AppInfoService;
+import com.xunyun.infanteduplatform.service.BulletinService;
+import com.xunyun.infanteduplatform.service.GrowthService;
+import com.xunyun.infanteduplatform.service.ImageService;
+import com.xunyun.infanteduplatform.utils.InteractionUtils;
+
+@Controller
+@RequestMapping("growth")
+public class GrowthController {
+
+  @Resource
+  private AppInfoService appInfoService;
+
+  @Resource
+  private GrowthService growthService;
+
+  @Resource
+  private BulletinService bulletinService;
+
+  @Resource
+  private ImageService imageService;
+
+  @RequestMapping("/studentInfoList")
+  @ResponseBody
+  public Map<String, Object> studentInfoList(String appCode, Integer organizationId,
+      Integer classId, @RequestParam(defaultValue = "1") Integer pageIndex, @RequestParam(
+          defaultValue = "10") Integer pageSize) throws Exception {
+    Map<String, Object> map = new HashMap<String, Object>();
+    if (appCode == null || appCode == "") {
+      map.put("state", "error");
+      map.put("message", "应用系统代码不能为空，获取信息失败");
+      map.put("data", "");
+    } else if (organizationId == null) {
+      map.put("state", "error");
+      map.put("message", "机构代码不能为空，获取信息失败");
+      map.put("data", "");
+    } else if (classId == null) {
+      map.put("state", "error");
+      map.put("message", "班级Id不能为空，获取信息失败");
+      map.put("data", "");
+    } else if (!appInfoService.findByAppCode(appCode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码未开启，查询失败!");
+      map.put("data", "");
+    } else {
+      // 开始条数
+      Integer startNumber = pageSize * (pageIndex - 1) + 1;// 起始条数
+      // 结束条数
+      Integer endNumber = pageIndex * pageSize;// 终止条数
+      // 总数目
+      int countNumber = 0;
+      Bulletin bulletin = new Bulletin();
+      bulletin.setClassId(classId);
+      bulletin.setOrganizationId(organizationId);
+      bulletin.setStartNumber(startNumber);
+      bulletin.setEndNumber(endNumber);
+      List<SysUserInfo> listData = growthService.queryGrowthPage(bulletin);
+      List<Map> studentList = new ArrayList<Map>();
+      if (listData != null && listData.size() > 0) {
+        countNumber = listData.get(0).getCountNumber();
+        for (SysUserInfo sysUserInfo : listData) {
+          Map<String, Object> studentInfo = new HashMap<String, Object>();
+          studentInfo.put("userId", sysUserInfo.getUserid());
+          studentInfo.put("name", sysUserInfo.getNAME());
+          studentInfo.put("ImageContent", InteractionUtils.getPhoto(sysUserInfo.getPhotourl()));
+          studentList.add(studentInfo);
+        }
+        map.put("state", "success");
+        // 页数
+        int pageCount = (int) Math.ceil((double) countNumber / pageSize);
+        // 总条数
+        map.put("dataCount", countNumber);
+        map.put("pageCount", pageCount);
+        map.put("pageIndex", pageIndex);
+        map.put("pageSize", pageSize);
+        // 数据列表
+        map.put("data", studentList);
+      } else {
+        map.put("state", "error");
+        map.put("message", "数据为空");
+        map.put("data", "");
+      }
+    }
+    return map;
+  }
+
+  @RequestMapping("/growthInfo")
+  @ResponseBody
+  public Map<String, Object> growthInfo(String appCode, Integer userId, @RequestParam(
+      defaultValue = "1") Integer pageIndex, @RequestParam(defaultValue = "10") Integer pageSize)
+      throws Exception {
+    Map<String, Object> map = new HashMap<String, Object>();
+    if (appCode == null || appCode == "") {
+      map.put("state", "error");
+      map.put("message", "应用系统代码不能为空，发布信息失败");
+      map.put("data", "");
+    } else if (userId == null) {
+      map.put("state", "error");
+      map.put("message", "用户ID不能为空，发布信息失败");
+      map.put("data", "");
+    } else if (!appInfoService.findByAppCode(appCode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码未开启，发布失败");
+      map.put("data", "");
+    } else {
+      // 开始条数
+      Integer startNumber = pageSize * (pageIndex - 1) + 1;// 起始条数
+      // 结束条数
+      Integer endNumber = pageIndex * pageSize;// 终止条数
+      //获得所有操作数据，按照时间列表展示（倒序）
+      Map<String, Integer> para = new HashMap<String, Integer>();
+      para.put("startNumber", startNumber);
+      para.put("endNumber", endNumber);
+      para.put("userId", userId);
+      List<Growth> growth=growthService.queryGrowthInfo(para);
+      
+      if (growth.size() > 0) {
+        map.put("state", "success");
+        // 页数
+        Integer pageCount = (int) Math.ceil((double) growth.get(0).getDataCount() / pageSize);
+        // 总条数
+        map.put("dataCount", growth.get(0).getDataCount());
+        map.put("pageCount", pageCount);
+        map.put("pageIndex", pageIndex);
+        map.put("pageSize", pageSize);
+        // 数据列表
+        map.put("data", growth);
+      }else{
+        map.put("state", "error");
+        map.put("message", "数据为空");
+        map.put("data", "");
+      }
+    }
+    return map;
+  }
+
+  @RequestMapping("/growthPublish")
+  @ResponseBody
+  public Map<String, Object> growthPublish(String appCode, Integer organizationId, Integer classId,
+      Integer userId, String bulletinContent, @RequestParam(value = "picturecontents",
+          required = false) List<Blob> picturecontents) throws Exception {
+    Map<String, Object> map = new HashMap<String, Object>();
+    if (appCode == null || appCode == "") {
+      map.put("state", "error");
+      map.put("message", "应用系统代码不能为空，发布信息失败");
+      map.put("data", "");
+    } else if (organizationId == null) {
+      map.put("state", "error");
+      map.put("message", "机构代码不能为空，发布信息失败");
+      map.put("data", "");
+    } else if (classId == null) {
+      map.put("state", "error");
+      map.put("message", "班级Id不能为空，发布信息失败");
+      map.put("data", "");
+    } else if (userId == null) {
+      map.put("state", "error");
+      map.put("message", "用户ID不能为空，发布信息失败");
+      map.put("data", "");
+    } else if (bulletinContent == null || bulletinContent == "") {
+      map.put("state", "error");
+      map.put("message", "成长记录信息不能为空，发布信息失败");
+      map.put("data", "");
+    } else if (!appInfoService.findByAppCode(appCode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码未开启，发布失败");
+      map.put("data", "");
+    } else {
+      Integer count = null;
+      // 公告信息保存
+      Bulletin bulletin = new Bulletin();
+      bulletin.setOrganizationId(organizationId);
+      bulletin.setClassId(classId);
+      bulletin.setTitle("");
+      bulletin.setBulletinType(8);
+      bulletin.setBulletinContent(bulletinContent);
+      bulletin.setDeleteFlg(0);
+      bulletin.setSources(0);
+      bulletin.setBulletinLevel(1);
+      bulletin.setCreationTime(Calendar.getInstance().getTime());
+      bulletin.setCreatedBy("aa");
+      bulletin.setLastUpdateTime(Calendar.getInstance().getTime());
+      bulletin.setLastUpdatedBy("aa");
+      count = bulletinService.addBulletinInfo(bulletin);
+      // TODO：图片信息
+      Image image = new Image();
+      if (picturecontents != null) {
+        for (Blob picturecontent : picturecontents) {
+          File file = InteractionUtils.blob2File(picturecontent);
+          String filename = file.getName();
+          // 名称（没有扩展名）
+          String picturename = filename.substring(0, filename.lastIndexOf('.'));
+          // 扩展名
+          String extension = filename.substring(filename.lastIndexOf('.') + 1);
+          // 大小
+          long size = file.length();
+          image.setImageContent(picturecontent);
+          image.setImageName(picturename);
+          image.setImageSize(size);
+          image.setExtension(extension);
+          image.setCreationTime(Calendar.getInstance().getTime());
+          image.setCreatedBy(userId.toString());
+          image.setOrganizationId(organizationId);
+          image.setLastUpdateTime(Calendar.getInstance().getTime());
+          image.setLastUpdatedBy("");
+          // 图片信息保存
+          count = imageService.addImageList(image);
+          ImageRelation imageRelation = new ImageRelation();
+          imageRelation.setImageId(image.getImageId());
+          imageRelation.setOrganizationId(organizationId);
+          imageRelation.setModuleId(bulletin.getBulletinId());
+          // 图片关联表信息保存
+          count = imageService.addImageRelation(imageRelation);
+        }
+      }
+
+      if (count > 0) {
+        map.put("state", "success");
+        map.put("message", "成长记录信息发布成功");
+        map.put("data", "");
+      } else {
+        map.put("state", "error");
+        map.put("message", "成长记录信息发布失败");
+        map.put("data", "");
+      }
+    }
+    return map;
+  }
+}

@@ -1,0 +1,57 @@
+package com.xunyun.infanteduplatform.domain.interaction;
+
+import java.util.Date;
+
+public class Dynamic {
+	//点赞Id
+	private Integer PraiseId;
+	//模块Id
+	private Integer ModuleId;
+	//用户Id
+	private Integer UserId;
+	//点赞时间
+	private Date PraiseTime;
+	//类型
+	private Integer DynamicType;
+	//点赞用户头像
+	private  String dynamicPhotoUrl;
+	
+	
+	public String getDynamicPhotoUrl() {
+		return dynamicPhotoUrl;
+	}
+	public void setDynamicPhotoUrl(String dynamicPhotoUrl) {
+		this.dynamicPhotoUrl = dynamicPhotoUrl;
+	}
+	public Integer getPraiseId() {
+		return PraiseId;
+	}
+	public void setPraiseId(Integer praiseId) {
+		PraiseId = praiseId;
+	}
+	public Integer getModuleId() {
+		return ModuleId;
+	}
+	public void setModuleId(Integer moduleId) {
+		ModuleId = moduleId;
+	}
+	public Integer getUserId() {
+		return UserId;
+	}
+	public void setUserId(Integer userId) {
+		UserId = userId;
+	}
+	public Date getPraiseTime() {
+		return PraiseTime;
+	}
+	public void setPraiseTime(Date praiseTime) {
+		PraiseTime = praiseTime;
+	}
+	public Integer getDynamicType() {
+		return DynamicType;
+	}
+	public void setDynamicType(Integer dynamicType) {
+		DynamicType = dynamicType;
+	}
+	
+}

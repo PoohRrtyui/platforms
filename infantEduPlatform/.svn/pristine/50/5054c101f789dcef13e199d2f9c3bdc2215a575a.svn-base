@@ -1,0 +1,20 @@
+package com.xunyun.infanteduplatform.service;
+
+import com.xunyun.infanteduplatform.domain.TeacherInClassEntity;
+import com.xunyun.infanteduplatform.persistent.UserMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * 教师任教班级Service
+ * Created by Pooh on 2015/12/21.
+ */
+@Service("TeaInClassService")
+public class TeacherInClassService {
+    @Autowired
+    private UserMapper userMapper;
+
+    public Integer saveTeaInClass(TeacherInClassEntity teacherInClass){
+        return userMapper.saveTClass(teacherInClass);
+    }
+}

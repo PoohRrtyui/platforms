@@ -1,0 +1,81 @@
+package com.xunyun.infanteduplatform.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.xunyun.infanteduplatform.domain.SysUserInfo;
+import com.xunyun.infanteduplatform.persistent.UserMapper;
+
+@Service("userService")
+public class UserService
+{
+
+	@Autowired
+	private UserMapper userMapper;
+    
+	/**
+     *  根据登陆账号获取用户信息
+     * @param username
+     * @return
+     */
+    public SysUserInfo getUserByUsername(String username){
+    	return this.userMapper.getUserByUsername(username);
+    }
+
+  public List<SysUserInfo> queryUserBySId(Integer schoolId) {
+        return this.userMapper.queryUserBySId(schoolId);
+  }
+
+  public List<SysUserInfo> queryUserByCId(Integer treeId) {
+        return this.userMapper.queryUserByCId(treeId);
+  }
+
+  public List<SysUserInfo> queryStuByCId(Integer treeId) {
+    return this.userMapper.queryStuByCId(treeId);
+  }
+
+  public List<SysUserInfo> queryUserByDId(Integer treeId) {
+    return this.userMapper.queryUserByDId(treeId);
+  }
+
+  public Integer delUserById(Integer userId, Integer schoolId, Integer treeId, Boolean isClass, Integer userType) {
+    Integer status = null;
+    this.userMapper.delUserById(userId);
+    this.userMapper.delLogById(userId);
+    if(treeId==null){
+      status = this.userMapper.delUOrgById(userId);
+    }else{
+      if(isClass=true){
+        if(userType==3){
+          status = this.userMapper.delUClassById(userId);
+        }else{
+          status = this.userMapper.delTClassById(userId);  
+        }
+      }else{
+          status = this.userMapper.delUDepbyId(userId);
+      }
+    }
+    return status;
+  }
+  
+  /**
+   *  根据登陆账号获取用户信息
+   * @param username
+   * @return
+   */
+  public SysUserInfo findUserById(Integer userId) {
+    return this.userMapper.findUserById(userId);
+  }
+  
+  /**
+   *  根据登陆账号获取用户信息
+   * @param username
+   * @return
+   */
+  public int updateUser(SysUserInfo sInfo) {
+    return this.userMapper.updateUser(sInfo);
+  }
+
+}

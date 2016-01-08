@@ -1,0 +1,85 @@
+package com.xunyun.infanteduplatform.controller.binduserinfo;
+
+import com.xunyun.infanteduplatform.domain.*;
+import com.xunyun.infanteduplatform.service.FamilyMembersService;
+import com.xunyun.infanteduplatform.service.TeacherInClassService;
+import com.xunyun.infanteduplatform.service.UserInDepartmentService;
+import com.xunyun.infanteduplatform.service.UserInOrgService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * 用户绑定信息Controller
+ * Created by Pooh on 2015/12/21.
+ */
+@Controller
+@RequestMapping(value="bindUserInfo")
+public class BindUserInfo {
+    @Autowired
+    private UserInOrgService userInOrgService;
+
+    @Autowired
+    private TeacherInClassService teacherInClassService;
+
+    @Autowired
+    private UserInDepartmentService userInDepartmentService;
+
+    @Autowired
+    private FamilyMembersService familyMembersService;
+
+    /**
+     *
+     * @param sysUserInorg 用户所属机构实体类
+     * @param department 用户所属部门Id
+     * @param classes 用户所属班级Id
+     * @param studentId 学生Id
+     * @param relation 家长学生关系
+     * @return Integer
+     */
+
+    @RequestMapping(value="/bind", method = RequestMethod.POST)
+    @ResponseBody
+    public Integer bindUserInfo(@ModelAttribute(value="userInOrg")SysUserInorg sysUserInorg,
+        @RequestParam(value="department",required = false)Integer department,
+        @RequestParam(value="classes",required = false)Integer classes,
+        @RequestParam(value="student",required = false)Integer studentId,
+        @RequestParam(value="relation",required = false)String relation){
+        Integer status = 0;
+        //学校下的教师，单位员工，学校下的教职工
+        userInOrgService.updateUserInOrg(sysUserInorg);
+        //在班级下的教师
+        if(sysUserInorg.getUserType() == 4 && classes !=null){
+            TeacherInClassEntity teacherInClass = new TeacherInClassEntity();
+            teacherInClass.setUserId(sysUserInorg.getUserId());
+            teacherInClass.setClassId(classes);
+            teacherInClass.setOrganizationId(sysUserInorg.getOrganizationId());
+            teacherInClass.setType(0);
+            teacherInClassService.saveTeaInClass(teacherInClass);
+        }
+        //部门下的教职工
+        else if(sysUserInorg.getUserType() == 1 && department!=null){
+            SysUserInDepartment userInDepartment = new SysUserInDepartment();
+            userInDepartment.setUserId(sysUserInorg.getUserId());
+            userInDepartment.setOrganizationId(sysUserInorg.getOrganizationId());
+            userInDepartment.setDepartmentId(department);
+            userInDepartmentService.saveUserInDept(userInDepartment);
+        }
+        //学生
+        else if(sysUserInorg.getUserType() == 8){
+            UserInClassEntity userInClass = new UserInClassEntity();
+            userInClass.setUserId(sysUserInorg.getUserId());
+            userInClass.setOrganizationId(sysUserInorg.getOrganizationId());
+            userInClass.setClassId(classes);
+        }
+        //家长
+        else if(sysUserInorg.getUserType() == 16){
+            FamilyMembers familyMembers = new FamilyMembers();
+            familyMembers.setStudentUserId(studentId);
+            familyMembers.setParentUserId(sysUserInorg.getUserId());
+            familyMembers.setRelation(relation);
+            familyMembersService.saveFamilyMembers(familyMembers);
+        }
+        return status;
+    }
+}

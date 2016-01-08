@@ -1,0 +1,84 @@
+
+
+var userMenus = {
+	classManage:"page/classmanage",
+    bureauUrl: "page/bureau",
+    headImgUrl: "page/headImage",
+    codeMasterUrl: "page/codemaster",
+    department: "departmentInfo/show",
+    pwdUrl: "page/passwordmanage",
+    bindUserInfo: "page/bindUserInfo",
+    updateSchoolInfo:"page/schoolInfo"
+};
+
+var _i="<li class=\"header\">栏目菜单</li>";
+var _a="<li class=\"treeview\"><a href=\"\"><i class=\"fa fa-link\"></i><span>";
+var _b="</span><i class=\"fa fa-angle-left pull-right\"></i></a><ul class=\"treeview-menu\"><li><a href=\"";
+var _c="\">";
+var _d="</a></li></ul></li>";
+var _e="<li class=\"treeview\"><a href=\"";
+var _f="\"><i class=\"fa fa-link\"></i><span>";
+var _g="</span></a></li>";
+
+
+$(function () {
+    queryPltMenu();
+});
+
+// 拼接左侧菜单
+function queryPltMenu() {
+	//获取登陆用户权限信息
+     $.ajax({
+    	 dataType:"JSON",
+          url:"classManage/queryLoginInfo",
+        	  success:function(data){
+        		  var organizationId="?schoolId="+data.organizationId;
+        		 if(data.isAdmin == 1 || data.isAdmin ==2) { //单位/学校管理员(2为默认管理员，在此无异)
+        			if(data.organizationType == 'S'){//学校管理员
+        					var html =_i
+        					+_e+userMenus.updateSchoolInfo+_f+"学校信息"+_g
+        					+_e+userMenus.department+organizationId+_f+"部门管理"+_g
+        					+_e+userMenus.classManage+organizationId+_f+"班级管理"+_g
+        					+_e+userMenus.bindUserInfo+_f+"用户管理"+_g
+        					+_a+"基本信息"+_b+userMenus.headImgUrl+_c+"头像上传"+_d
+        					+_e+_f+"身份信息"+_g
+        					+_e+userMenus.pwdUrl+_f+"修改密码"+_g;
+        					$(".sidebar-menu").append(html);
+        				}else{
+        				if(data.organizationType =='B'){//单位管理员
+        					var html=_i
+        					+_a+"机构管理"+_b+userMenus.bureauUrl+_c+"单位管理"+_d
+        					+_a+"基本信息"+_b+userMenus.headImgUrl+_c+"头像上传"+_d
+        					+_e+_f+"身份信息"+_g
+        					+_e+userMenus.pwdUrl+_f+"修改密码"+_g;
+        					$(".sidebar-menu").append(html);
+        				}
+        			}
+        		 }else{
+        			 if(data.isAdmin==0){//普通用户
+        				 var html=_i
+        				 +_a+"基本信息"+_b+userMenus.headImgUrl+_c+"头像上传"+_d
+        				 +_e+_f+"身份信息"+_g
+        				 +_e+userMenus.pwdUrl+_f+"修改密码"+_g
+							 +_e+userMenus.bindUserInfo+_f+"身份信息绑定"+_g;
+			             $(".sidebar-menu").append(html);
+        			 }else{
+        				 if(data.isAdmin==3){//超级管理员
+        				     var html=_i
+        				     +_e+_f+"应用管理"+_g
+        				     +_e+userMenus.codeMasterUrl+_f+"数据字典管理"+_g
+        				     +_a+"机构管理"+_b+userMenus.bureauUrl+_c+"单位管理"+_d
+        				     +_a+"基本信息"+_b+userMenus.headImgUrl+_c+"头像上传"+_d
+        				     +_e+userMenus.pwdUrl+_f+"修改密码"+_g
+        				     ; 
+        					  $(".sidebar-menu").append(html);
+        				 }
+        			 }
+        		 }
+        	  },
+        	  error:function(data){
+        		  alert("查询用户信息失败！");
+        	  }
+     });
+}
+

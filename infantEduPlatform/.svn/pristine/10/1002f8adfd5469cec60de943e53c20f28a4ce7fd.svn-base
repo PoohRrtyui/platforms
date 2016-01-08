@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.UserMapper">
+    <!-- <resultMap type="com.xunyun.infanteduplatform.domain.SysUserInorg" id="userInOrgResultMap">
+        <result column="USERID" property="userId" jdbcType="NUMERIC"/>
+        <result column="ORGANIZATIONID" property="organizationId" jdbcType="NUMERIC"/>
+        <result column="USERTYPE" property="userType" jdbcType="NUMERIC"/>
+        <result column="STARTNUMBER" property="startNumber" jdbcType="NUMERIC"/>
+        <result column="ENDNUMBER" property="endNumber" jdbcType="NUMERIC"/>
+        <result column="KEYVALUE" property="keyValue" jdbcType="VARCHAR"/>
+        <association property="sysUserInfo" javaType="sysUserInfo">
+            <result column="USERNAME" property="username" jdbcType="VARCHAR"/>
+            <result column="NICKNAME" property="nickname" jdbcType="VARCHAR"/>
+            <result column="NAME" property="NAME" jdbcType="VARCHAR"/>
+            <result column="GENDERCODE" property="gendercode" jdbcType="NUMERIC"/>
+            <result column="IDNO" property="idno" jdbcType="VARCHAR"/>
+            <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/>
+            <result column="EMAIL" property="email" jdbcType="VARCHAR"/>
+            <result column="CREATIONTIME" property="creationtime" jdbcType="Date"/>
+            <result column="LASTUPDATETIME" property="lastupdatetime" jdbcType="Date"/>
+            <result column="CREATEDBY" property="createdby" jdbcType="VARCHAR"/>
+            <result column="LASTUPDATEDBY" property="lastupdatedby" jdbcType="VARCHAR"/>
+        </association>
+        <association property="teachInclass" javaType="teachInclass">
+            <result column="CLASSID" property="classId" jdbcType="NUMERIC"/>
+            <result column="TYPE" property="type" jdbcType="NUMERIC"/>
+        </association>
+    </resultMap> -->
+    <!-- 根据schoolId查询用户 -->
+    <select id="queryUserBySId" parameterType="java.util.Map"
+            resultType="com.xunyun.infanteduplatform.domain.SysUserInorg">
+        <!--select * from userinfo u,userinorg uo where u.userid=uo.userid and uo.organizationid=#{schoolId} and uo.organizationtype=1 and u.deleteflg=0-->
+        <![CDATA[
+		select b.* from (
+				select 
+				a.*,
+				rownum as rownumber
+				from (
+				select u.userid,u.username,u.nickname,u.name,u.gendercode,u.creationtime,u.telephone,u.mobile,
+				u.email,u.idno,uo.usertype,uo.isadmin, tc.type, uo.organizationtype, count(uo.userid) over () countnumber 
+				from ib_userinorg uo 
+				left join ib_userinfo u on u.userid=uo.userid 
+				left join ib_teacherinclass tc on uo.userid= tc.userid 
+				left join ib_userinclass uc on uo.userid= uc.userid 
+				left join ib_userindept up on up.userid=uo.userid 
+				where 1=1
+				]]>
+        <if test="treeId == null">
+            <![CDATA[
+				and uo.organizationid=#{schoolId} and uo.organizationtype='S'
+				]]>
+        </if>
+        <if test="treeId!=null and treeId != ''">
+            <if test="isClass">
+                <![CDATA[
+						and tc.classid = #{treeId} or uc.classid = #{treeId}
+						]]>
+            </if>
+            <if test="!isClass">
+                <![CDATA[
+						and up.departmentid = #{treeId}
+						]]>
+            </if>
+        </if>
+        <if test="keyValue != null and keyValue != ''">
+            <![CDATA[
+					and u.username like '%'||#{keyValue}||'%' 
+					or u.nickname like '%'||#{keyValue}||'%' 
+					or u.name like '%'||#{keyValue}||'%' 
+					]]>
+        </if>
+        <![CDATA[
+				order by uo.usertype
+				) a where rownum <= #{endNumber} 	
+			) b	where b.rownumber >= #{startNumber} 
+			]]>
+    </select>
+
+    <!-- 根据ClassId(TreeId)查询教师用户-->
+    <select id="queryUserByCId" parameterType="Integer"
+            resultType="com.xunyun.infanteduplatform.domain.SysUserInfo">
+        select * from ib_userinfo u ,teacherinclass tc , userinorg uo where u.userid=tc.userid and
+        u.userid = uo.userid and tc.classId=#{treeId} and u.deleteflg=0
+    </select>
+
+    <!-- 根据ClassId(TreeId)查询学生用户-->
+    <select id="queryStuByCId" parameterType="Integer"
+            resultType="com.xunyun.infanteduplatform.domain.SysUserInfo">
+        select * from ib_userinfo u ,userinclass tc , userinorg uo where u.userid=tc.userid and
+        u.userid = uo.userid and tc.classId=#{treeId} and u.deleteflg=0
+    </select>
+
+    <select id="findPwdById" resultType="com.xunyun.infanteduplatform.domain.SysUserLogin">
+        select u.password from ib_userlogin u where u.userid=#{userId}
+    </select>
+
+    <!-- 根据departmentId(TreeId)查询用户-->
+    <select id="queryUserByDId" parameterType="Integer"
+            resultType="com.xunyun.infanteduplatform.domain.SysUserInfo">
+        select * from ib_userinfo u inner join userindept ut on u.userid=ut.userid where
+        ut.departmentid=#{treeId} and u.deleteflg=0
+    </select>
+
+    <!--用户逻辑删除-->
+    <update id="delUserById" parameterType="Integer">
+        update ib_userinfo set deleteFlg = 1 where userid = #{userId}
+    </update>
+
+    <!--登录表逻辑删除-->
+    <update id="delLogById" parameterType="Integer">
+        update ib_userlogin set deleteFlg = 1 where userid = #{userId}
+    </update>
+
+    <!--用户机构关联逻辑删除-->
+    <update id="delUOrgById" parameterType="Integer">
+        update ib_userinorg uo set uo.organizationid = '' , uo.organizationtype = '' , uo.usertype =
+        0 where userid = #{userId}
+    </update>
+
+    <!--用户班级表删除-->
+    <delete id="delUClassById" parameterType="Integer">
+        delete ib_userinclass where userid = #{userId}
+    </delete>
+
+    <!--教师班级表删除-->
+    <delete id="delTClassById" parameterType="Integer">
+        delete ib_teacherinclass where userid = #{userId}
+    </delete>
+
+    <!--用户部门表删除-->
+    <delete id="delUDepbyId" parameterType="Integer">
+        delete ib_userindept where userid = #{userId}
+    </delete>
+
+    <!--查询用户信息-->
+    <select id="findUserById" parameterType="Integer"
+            resultType="com.xunyun.infanteduplatform.domain.SysUserInfo">
+        select * from ib_userinfo where userid = #{userId}
+    </select>
+
+    <update id="updateUser" parameterType="com.xunyun.infanteduplatform.domain.SysUserInfo">
+        update ib_userinfo set photourl = #{photourl} where userid = #{userid}
+    </update>
+
+    <insert id="saveUserInfo" parameterType="com.xunyun.infanteduplatform.domain.SysUserInfo">
+        <selectKey keyProperty="userid" resultType="Integer" order="BEFORE">
+            select SEQ_USERINFO.nextval from dual
+        </selectKey>
+        insert into ib_userinfo values(
+        #{userid},#{username},#{nickname},#{NAME},#{gendercode},#{idtype},#{idno},'',#{mobile},'',#{email},
+        '','','','',#{deleteflg},#{creationtime},#{createdby},'','')
+    </insert>
+    <insert id="saveUOrg" parameterType="com.xunyun.infanteduplatform.domain.SysUserInorg">
+        insert into ib_userinorg values(
+        #{userId},#{organizationId},#{organizationType},#{userType},#{startTime},'',#{isAdmin})
+    </insert>
+    <insert id="saveUserLog" parameterType="com.xunyun.infanteduplatform.domain.SysUserLogin">
+        insert into ib_userlogin values(
+        #{id},#{name},#{email},#{mobile},#{password},'','','','')
+    </insert>
+    <insert id="saveTClass"
+            parameterType="com.xunyun.infanteduplatform.domain.TeacherInClassEntity">
+        insert into ib_teacherinclass values(
+        #{userId},#{organizationId},#{classId},#{type})
+    </insert>
+    <insert id="saveUClass" parameterType="com.xunyun.infanteduplatform.domain.UserInClassEntity">
+        insert into ib_userinclass values(
+        #{userId},#{organizationId},#{classId})
+    </insert>
+    <insert id="saveUDep" parameterType="com.xunyun.infanteduplatform.domain.SysUserInDepartment">
+        insert into ib_userindept values(
+        #{userId},#{DepartmentId},#{OrganizationId})
+    </insert>
+    <update id="updateUserInfo" parameterType="com.xunyun.infanteduplatform.domain.SysUserInfo">
+        update ib_userinfo
+        set
+        nickname=#{nickname,jdbcType=VARCHAR},name=#{NAME,jdbcType=VARCHAR},gendercode=#{gendercode,jdbcType=NUMERIC},idno=#{idno,jdbcType=VARCHAR},mobile=#{mobile,jdbcType=VARCHAR},email=#{email,jdbcType=VARCHAR}
+        where userid = #{userid,jdbcType=NUMERIC}
+    </update>
+    <update id="updateLogUser" parameterType="com.xunyun.infanteduplatform.domain.SysUserLogin">
+        update ib_userlogin
+        set mobile=#{mobile},email=#{email}
+        where userid = #{id}
+    </update>
+    <update id="updateAdmin" parameterType="java.util.Map">
+        update ib_userinorg
+        set isadmin=1
+        where userid in
+        <foreach collection="idList" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <update id="closeAdmin" parameterType="java.util.Map">
+        update ib_userinorg
+        set isadmin=0
+        where userid in
+        <foreach collection="idList" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <update id="auditUser" parameterType="java.util.Map">
+        update ib_userinorg
+        set isauthentication=1
+        where userid in
+        <foreach collection="idList" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <update id="updateStudent" parameterType="java.util.Map">
+        update ib_userinclass
+        set classid=#{tId}
+        where userid in
+        <foreach collection="idList" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <update id="updateTeacher" parameterType="java.util.Map">
+        update ib_teacherinclass
+        set classid=#{tId}
+        where userid in
+        <foreach collection="idList" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <update id="updateDept" parameterType="java.util.Map">
+        update ib_userindept
+        set departmentid=#{tId}
+        where userid in
+        <foreach collection="idList" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <!--APP查询用户信息-->
+    <select id="searchById" parameterType="Integer"
+            resultType="com.xunyun.infanteduplatform.domain.interaction.UserInfo">
+        select
+        USERNAME,NICKNAME,NAME,GENDERCODE,IDNO,BIRTHDAY,MOBILE,TELEPHONE,EMAIL,QQ,DESCRIPTION,PHOTOURL
+        from ib_userinfo where userid = #{userId}
+    </select>
+    <!--APP用户信息修改-->
+    <update id="updateUserInfoforImi" parameterType="java.util.Map">
+        update ib_userinfo
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="nickName != null and nickName != ''">
+                nickName = #{nickName},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="genderCode != null and genderCode != ''">
+                genderCode = #{genderCode},
+            </if>
+            <if test="idNo != null and idNo != ''">
+                idNo = #{idNo},
+            </if>
+            <if test="birthday != null and birthday != ''">
+                birthday = #{birthday},
+            </if>
+            <if test="telephone != null and telephone != ''">
+                telephone = #{telephone},
+            </if>
+            <if test="qq != null and qq != ''">
+                qq = #{qq},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description}
+            </if>
+        </trim>
+        where userId=#{userId}
+    </update>
+    <!--APP用户登录表修改手机、邮箱-->
+    <update id="updateLoginMobile" parameterType="java.util.Map">
+        update ib_USERLOGIN 
+		<trim prefix="SET" suffixOverrides=",">
+        <if test="mobile != null and mobile != ''">
+            mobile = #{mobile},
+        </if>
+        <if test="email != null and email != ''">
+            email = #{email}
+        </if>
+		</trim>
+        where userId=#{userId}
+    </update>
+    <!--APP用户信息表修改手机、邮箱-->
+    <update id="updateUserInfoMobile" parameterType="java.util.Map">
+        update ib_USERINFO 
+		<trim prefix="SET" suffixOverrides=",">
+        <if test="mobile != null and mobile != ''">
+            mobile = #{mobile},
+        </if>
+        <if test="email != null and email != ''">
+            email = #{email}
+        </if>
+		</trim>
+        where userId=#{userId}
+    </update>
+    <!--APP用户信息表修改用户头像-->
+    <update id="updateImage" parameterType="java.util.Map">
+        update ib_USERINFO set PhotoUrl=#{imgFolder} where userId=#{userId}
+    </update>
+    
+    <select id="findById" parameterType="Integer" resultType="Integer">
+        select count(*) from ib_userlogin u where u.userid=#{userId}
+    </select>
+</mapper>

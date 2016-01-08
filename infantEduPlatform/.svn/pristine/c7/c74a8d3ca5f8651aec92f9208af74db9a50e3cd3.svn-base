@@ -1,0 +1,20 @@
+package com.xunyun.infanteduplatform.domain.interaction;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import oracle.sql.BLOB;
+
+public class PictureList {
+  //图片内容
+  private List<BLOB> pictureList = new ArrayList<BLOB>();
+
+  public List<BLOB> getPictureList() {
+    return pictureList;
+  }
+
+  public void setPictureList(List<BLOB> pictureList) {
+    this.pictureList = pictureList;
+  }
+  
+}

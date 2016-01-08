@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.AppInfoMapper">
+	<select id="findCodeMaster" resultType="com.xunyun.infanteduplatform.domain.SysCodeMaster">
+		select SMALLCATEGORYNAME from CODEMASTER where LARGECATEGORYCD='Platform' and SMALLCATEGORYCD=#{smallCategoryCd}
+	</select>
+	
+	<select id="findById" parameterType="int" resultType="com.xunyun.infanteduplatform.domain.AppInfo">
+		select * from APPINFO where APPID=#{id}
+	</select>
+	
+	<insert id="addAppInfo" parameterType="com.xunyun.infanteduplatform.domain.AppInfo">
+	 	   insert into appInfo values(SEQ_APPINFO.nextval,#{appCode},#{appName},#{platform},#{locationCode},#{state},#{iconUrl},#{summery},#{creationTime},#{createdBy},#{lastUpdateTime},#{lastUpdatedBy})
+	</insert>
+	
+	<update id="updateAppInfo" parameterType="com.xunyun.infanteduplatform.domain.AppInfo">
+	    update APPINFO set APPNAME=#{appName},PLATFORM=#{platform},LOCATIONCODE=#{locationCode},ICONURL=#{iconUrl},LASTUPDATETIME=#{lastUpdateTime},LASTUPDATEDBY=#{lastUpdatedBy},SUMMERY=#{summery} where APPID=#{appId}
+	</update>
+	
+	<delete id="deleteAppInfo" parameterType="int">
+		delete from APPINFO where APPID=#{id} and STATE=2
+	</delete>
+	
+	<!--   批量开启 -->
+  <update id ="updateList" parameterType="java.util.Map">
+  	update appInfo set State=1 where appid in 
+  	<foreach collection="idList" item="item" index="index" open="(" separator="," close=")" >
+					#{item}
+	</foreach>
+  </update>	
+  
+  	<!--   批量关闭 -->
+  <update id ="closeList" parameterType="java.util.Map">
+  	update appInfo set State=2 where appid in 
+  	<foreach collection="idList" item="item" index="index" open="(" separator="," close=")" >
+					#{item}
+	</foreach>
+  </update>	
+  
+  	<delete id="deleteList" parameterType="java.util.Map">
+		delete from APPINFO where STATE=2 and APPID in 
+		<foreach collection="idList" item="item" index="index" open="(" separator="," close=")" >
+					#{item}
+	</foreach>
+	</delete>
+	
+	<select id="updateValidate" parameterType="com.xunyun.infanteduplatform.domain.AppInfo" resultType="int" >
+		select count(*) from APPINFO where APPNAME=#{appName}	
+		<if test="appId != null and appId != ''">
+				and APPID!=#{appId}
+		</if>	 
+	</select>
+	
+	<!-- 初始加载查询数据 -->
+	<select id="queryAppInfoPage" parameterType="com.xunyun.infanteduplatform.domain.AppInfo"
+		resultType="com.xunyun.infanteduplatform.domain.AppInfo">
+				<![CDATA[SELECT b.* FROM ( SELECT a.*,rownum AS rownumber FROM ( 
+      SELECT ai.AppId,ai.AppCode,ai.AppName,ai.Platform,ai.Summery,cm.smallcategoryname AS platformName,ai.LocationCode,cml.smallcategoryname AS locationName,ai.State,cms.smallcategoryname AS stateName,ai.IconUrl,COUNT(*) OVER () COUNTNUMBER	
+      FROM appInfo ai
+      LEFT JOIN codemaster cm on cm.smallcategorycd = ai.platform AND cm.largecategorycd = 'Platform'
+      LEFT JOIN codemaster cml on cml.smallcategorycd = ai.locationcode AND cml.largecategorycd = 'LocationCode'
+      LEFT JOIN codemaster cms on cms.smallcategorycd = ai.state AND cms.largecategorycd = 'State']]>
+			<where>
+			<if test="keyValue != null and keyValue != ''">
+				<![CDATA[ai.AppName like '%'||#{keyValue}||'%' ]]>	
+			</if>
+			</where>
+				<![CDATA[ ORDER BY LASTUPDATETIME desc) a WHERE rownum <= #{endNumber}) b	WHERE b.rownumber >= #{startNumber} ]]> 
+	</select>
+	
+	<select id="findByAppCode" parameterType="java.lang.String" resultType="int" >
+		select count(*) from APPINFO where APPCODE=#{appCode} and STATE=1		 
+	</select>
+	
+</mapper>

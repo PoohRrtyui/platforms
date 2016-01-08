@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.MorningCheckMapper">
+	 
+    
+    <!-- app查询班级学生列表 -->
+    <select id="queryStudentInClasssList"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.MorningCheck"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.MorningCheck">
+		<![CDATA[
+              select 
+              	uc.userid,
+              	ui.name as studentName,
+              	uc.organizationid,
+              	uc.classid,  
+                mc.state,
+                mc.checksummary,
+                mc.checktime,
+                uu.name as checkteachername,
+                mc.teacherid
+                from ib_userinclass uc
+                left join ii_morningcheck mc 
+                on uc.userid=mc.userid and mc.checktime = to_date(to_char(sysdate,'yyyy-MM-dd'),'yyyy-MM-dd')
+                left join ib_userinfo ui
+                on uc.userid= ui.userid
+                left join ib_userinorg uo
+                 on uc.userid=uo.userid
+                left join ib_userinfo uu
+                on mc.teacherid=uu.userid
+                 where uc.classid=#{classId}
+                and uc.organizationid=#{organizationId}
+                and uo.usertype='8'
+                and ui.deleteflg='0'
+         ORDER by checktime DESC  
+		]]>
+	</select>
+	
+	<!-- 后台管理查询班级学生列表 -->
+    <select id="queryStudentInClasssListInfo"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.MorningCheck"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.MorningCheck">
+		<![CDATA[
+			 SELECT  b.*  FROM (
+                SELECT 
+                a.*, 
+                rownum  AS  rownumber  
+                FROM(
+              select 
+                   mc.checkId,
+                   mc.state,
+                   mc.checksummary,
+                   mc.checktime,
+                   mc.userid,
+                   mc.teacherid ,
+                   ui.name as studentname,
+                   uu.name as checkteachername,
+                   COUNT(*) OVER () dataCount
+                   from
+                   ii_morningcheck mc 
+                   left join ib_userinorg uo on mc.userid=uo.userid
+                   left join ib_userinfo ui on mc.userid=ui.userid
+                   left join ib_userinfo uu on mc.teacherid=uu.userid]]>
+                   where uo.usertype='8' and ui.deleteflg='0' and uu.deleteflg='0'
+                   <if test="keyValue != null and keyValue != ''">
+			<![CDATA[
+					AND
+					(ui.name like '%'||#{keyValue}||'%'
+					OR uu.name like '%'||#{keyValue}||'%' 
+					OR checktime like '%'||#{keyValue}||'%' )
+			 ]]>		
+		           </if>
+         <![CDATA[) a 
+                WHERE rownum <= #{endNumber jdbcType=INTEGER}
+              ) b WHERE b.rownumber >= #{startNumber jdbcType=INTEGER} ORDER by checktime DESC
+              
+		 ]]>
+	</select>
+	
+	<!-- 删除晨检信息 -->
+	<delete id="deleteMorningCheck" parameterType="int">
+	     delete from II_MORNINGCHECK mc where mc.checkId=#{checkId}
+	</delete>
+	
+	 <!-- 取当前时间和userid查看此当前学生是否晨检过 -->
+	<select id="queryMorningCheckNumber" parameterType="com.xunyun.infanteduplatform.domain.interaction.MorningCheck"
+	resultType="Integer">
+	 select count(0) from II_MORNINGCHECK mc where mc.userid=#{userId} and mc.checktime=#{checkTime}
+	</select>
+     
+     
+    <!-- 添加学生当天晨检情况 -->
+     <insert id="insertCheckMoring" parameterType="com.xunyun.infanteduplatform.domain.interaction.MorningCheck">
+      <![CDATA[
+	   insert into II_MORNINGCHECK mc 
+            (mc.checkId,mc.userId,mc.state,mc.checkSummary,mc.checkTime,mc.teacherId)  
+        values  
+            (SEQ_II_MORNINGCHECK.NEXTVAL,#{userId},#{state},#{checkSummary},#{checkTime},#{teacherId}) 
+		]]>            
+     </insert>
+     
+</mapper>

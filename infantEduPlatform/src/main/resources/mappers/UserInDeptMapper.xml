@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.UserInDeptMapper">
+
+    <update id="updateUserInDept"
+            parameterType="com.xunyun.infanteduplatform.domain.SysUserInDepartment">
+        update IB_userInDept
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="departmentId != null ">
+                departmentId = #{departmentId},
+            </if>
+            <if test="organizationId != null ">
+                organizationId = #{organizationId},
+            </if>
+        </trim>
+        where userId = #{userId}
+    </update>
+
+    <select id="queryUserInDeptByUserId" parameterType="com.xunyun.infanteduplatform.domain.SysUserInorg"
+            resultType="com.xunyun.infanteduplatform.domain.SysDepartmentInfo">
+        select
+        iu.departmentId,
+        id.departmentName
+        from ib_userInDept iu
+        left join ib_departmentInfo id
+        on iu.departmentId = id.departmentId
+        where userId = #{id}
+    </select>
+</mapper>

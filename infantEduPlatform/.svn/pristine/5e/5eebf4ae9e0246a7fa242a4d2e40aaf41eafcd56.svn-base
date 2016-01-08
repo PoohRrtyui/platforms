@@ -1,0 +1,157 @@
+package com.xunyun.infanteduplatform.domain;
+
+import java.util.Date;
+
+public class SysUserInorg {
+  
+  private Integer userId;
+  
+  private Integer organizationId;
+  
+  private Integer organizationType;
+  
+  private Integer userType;
+  
+  private Date startTime;
+  
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  private String userCode;
+  
+  private Integer isAdmin;
+  
+  private String name;
+  
+  private Integer deleteFlg;
+  
+  private String mainTeacherId;
+  
+  private String nurserygovernessId;
+  
+  private String withTeacherId;
+  
+  private Integer classId;
+  
+  //用户教师身份区别标标识
+  private Integer type;
+
+ 
+
+
+ 
+
+  
+
+  public Integer getType() {
+    return type;
+  }
+
+  public void setType(Integer type) {
+    this.type = type;
+  }
+
+  public String getMainTeacherId() {
+    return mainTeacherId;
+  }
+
+  public void setMainTeacherId(String mainTeacherId) {
+    this.mainTeacherId = mainTeacherId;
+  }
+
+  public String getNurserygovernessId() {
+    return nurserygovernessId;
+  }
+
+  public void setNurserygovernessId(String nurserygovernessId) {
+    this.nurserygovernessId = nurserygovernessId;
+  }
+
+  public String getWithTeacherId() {
+    return withTeacherId;
+  }
+
+  public void setWithTeacherId(String withTeacherId) {
+    this.withTeacherId = withTeacherId;
+  }
+
+  public Integer getIsAdmin() {
+    return isAdmin;
+  }
+
+  public void setIsAdmin(Integer isAdmin) {
+    this.isAdmin = isAdmin;
+  }
+
+
+
+  public Integer getUserId() {
+    return userId;
+  }
+
+  public void setUserId(Integer userId) {
+    this.userId = userId;
+  }
+
+  public Integer getOrganizationId() {
+    return organizationId;
+  }
+
+  public void setOrganizationId(Integer organizationId) {
+    this.organizationId = organizationId;
+  }
+
+  public Integer getClassId() {
+    return classId;
+  }
+
+  public void setClassId(Integer classId) {
+    this.classId = classId;
+  }
+
+  public Integer getOrganizationType() {
+    return organizationType;
+  }
+
+  public void setOrganizationType(Integer organizationType) {
+    this.organizationType = organizationType;
+  }
+
+  public Integer getUserType() {
+    return userType;
+  }
+
+  public void setUserType(Integer userType) {
+    this.userType = userType;
+  }
+
+  public Date getStartTime() {
+    return startTime;
+  }
+
+  public void setStartTime(Date startTime) {
+    this.startTime = startTime;
+  }
+
+  public String getUserCode() {
+    return userCode;
+  }
+
+  public void setUserCode(String userCode) {
+    this.userCode = userCode;
+  }
+
+  public Integer getDeleteFlg() {
+    return deleteFlg;
+  }
+
+  public void setDeleteFlg(Integer deleteFlg) {
+    this.deleteFlg = deleteFlg;
+  }
+
+}

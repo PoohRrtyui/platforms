@@ -1,0 +1,21 @@
+package com.xunyun.infanteduplatform.persistent;
+
+import java.util.List;
+
+import com.xunyun.infanteduplatform.domain.SysCodeMaster;
+
+public interface CodeMasterMapper {
+   //查询数据字典数据
+   public List<SysCodeMaster> queryCodeMasterInfo(SysCodeMaster sysCodeMaster);
+   //添加数据字典数据
+   public Integer saveCodeMasterInfo(SysCodeMaster sysCodeMaster);
+   //添加功能查重验证
+   public SysCodeMaster querySaveRepeat(SysCodeMaster sysCodeMaster);
+   //修改数据字典数据
+   public Integer updateCodeMasterInfo(SysCodeMaster sysCodeMaster); 
+   //数据字典逻辑删除
+   public Integer deleteCodeMaster(SysCodeMaster sysCodeMaster);
+   //查找机构身份数据
+  public List<SysCodeMaster> findOrg(String string);
+   
+}

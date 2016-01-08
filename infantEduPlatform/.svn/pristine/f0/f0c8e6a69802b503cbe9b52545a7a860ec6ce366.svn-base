@@ -1,0 +1,150 @@
+/**
+ * 用户对象
+ * Created by Pooh on 2015/12/11.
+ */
+/*
+ var userMenus  ={
+ bureauUrl : "/page/bureau",
+ headImgUrl : "/page/headImage",
+ codeMasterUrl : "/page/codemaster",
+ department : "/departmentInfo/show",
+ pwdUrl : "/page/passwordmanage"
+ };
+
+ function userType(isAdmin,orgType)  {
+ this.isAdmin = isAdmin;
+ this.orgType = orgType;
+ debugger;
+ if(isAdmin == 1 || isAdmin ==2){//单位/学校管理员(2为默认管理员，在此无异)
+ if(this.orgType == 'S'){//学校管理员
+ return menus(0,1,0,1,1);
+ }else if(this.orgType == 'B'){//单位管理员
+ return menus(1,1,0,0,1);
+ }else{
+ return false;
+ }
+ }else if(isAdmin == 3){//超级管理员
+ return menus(1,1,1,1,1);
+ }else if(isAdmin == 0){//普通用户
+ return menus(0,1,0,0,1);
+ }else{
+ return false;
+ }
+ }
+
+
+ *//**
+ * @param _a
+ *            单位管理
+ * @param _b
+ *            头像设置
+ * @param _c
+ *            字典关联
+ * @param _d
+ *            部门管理
+ * @param _e
+ *            密码管理
+ */
+/*
+ * function menus(_a,_b,_c,_d,_e){ if(_a!=0){ this._a = userMenus.bureauUrl;
+ * }else if(_b!=0){ this._b = userMenus.headImgUrl; }else if(_c!=0){ this._c =
+ * userMenus.codeMasterUrl; }else if(_d!=0){ this._d = userMenus.department;
+ * }else if(_e!=0){ this._e = userMenus.pwdUrl; } return userMenus; }
+ */
+
+var userMenus = {
+	classManage:"page/classmanage",
+    bureauUrl: "page/bureau",
+    headImgUrl: "page/headImage",
+    codeMasterUrl: "page/codemaster",
+    department: "departmentInfo/show",
+    pwdUrl: "page/passwordmanage",
+    bindUserInfo: "page/bindUserInfo",
+    userinfo:"user/index",
+    updateSchoolInfo:"page/schoolInfo"
+};
+
+var _i="<li class=\"header\">栏目菜单</li>";
+var _a="<li class=\"treeview\"><a href=\"\"><i class=\"fa fa-link\"></i><span>";
+var _b="</span><i class=\"fa fa-angle-left pull-right\"></i></a><ul class=\"treeview-menu\"><li><a href=\"";
+var _c="\">";
+var _d="</a></li></ul></li>";
+var _e="<li class=\"treeview\"><a href=\"";
+var _f="\"><i class=\"fa fa-link\"></i><span>";
+var _g="</span></a></li>";
+
+
+$(function () {
+    queryPltMenu();
+});
+
+// 拼接左侧菜单
+function queryPltMenu() {
+	//获取登陆用户权限信息
+     $.ajax({
+    	 dataType:"JSON",
+          url:"classManage/queryLoginInfo",
+        	  success:function(data){
+        		  var organizationId="?schoolId="+data.organizationId;
+        		  var userorganizationId="?type=S&schoolId="+data.organizationId;
+        		 if(data.isAdmin == 1 || data.isAdmin ==2) { //单位/学校管理员(2为默认管理员，在此无异)
+        			if(data.organizationType == 'S'){//学校管理员
+        					var html =_i
+        					+_e+userMenus.updateSchoolInfo+_f+"学校信息"+_g
+        					+_e+userMenus.department+organizationId+_f+"部门管理"+_g
+        					+_e+userMenus.classManage+organizationId+_f+"班级管理"+_g
+        					+_e+userMenus.userinfo+userorganizationId+_f+"用户管理"+_g
+        					+_a+"基本信息"+_b+userMenus.headImgUrl+_c+"头像上传"+_d
+        					+_e+_f+"身份信息"+_g
+        					+_e+userMenus.pwdUrl+_f+"修改密码"+_g;
+
+        					$(".sidebar-menu").append(html);
+        				}else{
+        				if(data.organizationType =='B'){//单位管理员
+        					var html=_i
+        					+_a+"机构管理"+_b+userMenus.bureauUrl+_c+"单位管理"+_d
+        					+_a+"基本信息"+_b+userMenus.headImgUrl+_c+"头像上传"+_d
+        					+_e+_f+"身份信息"+_g
+        					+_e+userMenus.pwdUrl+_f+"修改密码"+_g;
+        					$(".sidebar-menu").append(html);
+        				}
+        			}
+        		 }else{
+        			 if(data.isAdmin==0){//普通用户
+        				 var html=_i
+        				 +_a+"基本信息"+_b+userMenus.headImgUrl+_c+"头像上传"+_d
+        				 +_e+_f+"身份信息"+_g
+        				 +_e+userMenus.pwdUrl+_f+"修改密码"+_g;
+			             $(".sidebar-menu").append(html);
+        			 }else{
+        				 if(data.isAdmin==3){//超级管理员
+        				     var html=_i
+        				     +_e+_f+"应用管理"+_g
+        				     +_e+userMenus.codeMasterUrl+_f+"数据字典管理"+_g
+        				     +_a+"机构管理"+_b+userMenus.bureauUrl+_c+"单位管理"+_d
+        				     +_a+"基本信息"+_b+userMenus.headImgUrl+_c+"头像上传"+_d
+        				     +_e+userMenus.pwdUrl+_f+"修改密码"+_g
+        				     ; 
+        					  $(".sidebar-menu").append(html);
+        				 }
+        			 }
+        		 }
+        	  },
+        	  error:function(data){
+        		  alert("查询用户信息失败！");
+        	  }
+     });
+}
+	/*var html = '<li class="header">栏目菜单</li><li class="treeview"><a href="">'
+	+'<i class="fa fa-link"></i> <span>机构管理</span><i class="fa fa-angle-left pull-right"></i></a>'
+	+'<ul class="treeview-menu"><li><a href="'
+			+ userMenus.bureauUrl
+			+ '">单位管理</a></li></ul></li><li class="treeview"><a href="'+userMenus.pwdUrl+'">'
+			+'<i class="fa fa-link"></i><span>修改密码</span></a></li><li class="treeview"><a href="'
+			+userMenus.headImgUrl+'"><i class="fa fa-link"></i> <span>头像上传</span></a></li>'
+			+'<li class="treeview"><a href="'+userMenus.codeMasterUrl+'"><i class="fa fa-link"></i> '
+			+'<span>数据字典</span></a></li><li class="treeview"><a href="'+userMenus.department
+			+'"><i class="fa fa-link"></i> <span>部门管理</span></a></li>';*/
+	/*$(".sidebar-menu").append(html);*/
+    //获取登陆用户权限信息
+    

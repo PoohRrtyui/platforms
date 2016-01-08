@@ -1,0 +1,13 @@
+package com.xunyun.infanteduplatform.persistent;
+
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
+import com.xunyun.infanteduplatform.domain.interaction.DiscussionReplay;
+
+@Repository
+public interface DiscussionReplayMapper {
+	// 我的社区（该用户评论的信息）
+		List<DiscussionReplay> myCommentCollect(DiscussionReplay discussionReplay);
+}

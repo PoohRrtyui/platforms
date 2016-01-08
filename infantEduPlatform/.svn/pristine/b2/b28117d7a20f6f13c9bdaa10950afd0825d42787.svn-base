@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.DepartmentRelationMapper">
+	<!--增加部门信息-->
+	<insert id="addDepartmentRelation" parameterType="com.xunyun.infanteduplatform.domain.SysDepartmentRelation">
+	 	   insert into departmentrelation values(#{DepartmentId},#{BureauId},#{ParentDepartmentId},#{IsChild})
+	</insert>
+	
+	<select id="getClassAndDepList" parameterType="java.util.Map" resultType="com.xunyun.infanteduplatform.domain.SysDepartmentInfo">
+		select dep.DEPARTMENTID,dep.DEPARTMENTNAME,depr.PARENTDEPARTMENTID,depr.ISCHILD from departmentinfo dep,departmentrelation depr where dep.DEPARTMENTID=depr.DEPARTMENTID and depr.BUREAUID=#{sId} and depr.PARENTDEPARTMENTID=#{pId}
+	</select>
+	<!-- 根据学校Id查询下级班级 -->
+	<select id="getClassList" parameterType="Integer" resultType="com.xunyun.infanteduplatform.domain.ClassManageEntity">
+		select cl.CLASSID,cl.CLASSNAME,clr.SCHOOLID from classInfo cl,classinforelation clr where cl.CLASSID=clr.CLASSID and clr.SCHOOLID=#{id}
+	</select>
+	<!--查询一级部门-->
+	<select id="findName" parameterType="int" resultType="com.xunyun.infanteduplatform.domain.SysDepartmentInfo">
+		select PARENTDEPARTMENTID,ISCHILD,DEPARTMENTID,DEPARTMENTNAME ,DUTYPERSON,DESCRIPTION,TELEPHONE from
+ 		(select a.PARENTDEPARTMENTID,a.ISCHILD,b.DEPARTMENTID,b.DEPARTMENTNAME ,b.DUTYPERSON,b.DESCRIPTION,b.DELETEFLG,b.TELEPHONE from 
+  		departmentrelation a,departmentinfo b where b.DEPARTMENTID=a.DEPARTMENTID and a.PARENTDEPARTMENTID=#{ParentDepartmentId}) where DELETEFLG=0 order by DEPARTMENTID asc
+	</select>
+
+</mapper>

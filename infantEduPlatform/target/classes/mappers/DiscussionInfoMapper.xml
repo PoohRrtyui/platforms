@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.DiscussionInfoMapper">
+	<!-- 交流列表获取（自用） -->
+	<select id="queryDiscussionInfo"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Discussion"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Discussion">
+		<![CDATA[
+			SELECT b.*FROM (
+			SELECT a.*
+			,rownum AS rownumber 
+			FROM (select 
+			c.discussionId,
+			c.discussionContent,
+			f.name As createdBy,
+			c.creationTime as creationTime,
+			nvl(d.replyCount,0) as replyCount,
+			nvl(e.dynamiCount,0) as dynamicCount,
+			nvl(g.shareCount,0) as shareCount,
+			f.PhotoUrl AS authorPhotoUrl,
+			count(*) over() dataCount
+			from II_Discussion c
+			left join (
+			select targetId,count(*) AS replyCount from II_DiscussionReplay
+			group by targetId
+			) d on d.targetId = c.discussionId
+			left join (
+			select ModuleId,count(*) AS dynamiCount from II_Dynamic where dynamicType= 7
+			group by moduleId
+			) e on e.moduleId = c.discussionId
+			
+			left join (
+			select ModuleId,count(*) AS shareCount from II_Share where shareType= 7
+			group by moduleId
+			) g on g.moduleId = c.discussionId
+			left join IB_userInfo f ON c.CreatedBy=f.userId
+			where c.deleteflg = 0 
+			]]>
+		<if test="subject != null and subject != ''">
+	                <![CDATA[ 
+	                 AND c.subject = #{subject} 
+	                ]]>
+		</if>
+			<![CDATA[
+			and c.OrganizationId=#{organizationId jdbcType=INTEGER} 
+			ORDER BY c.creationTime desc
+					) a WHERE rownum <= #{endNumber jdbcType=INTEGER} 	
+			) b	WHERE b.rownumber >= #{startNumber jdbcType=INTEGER} 
+		]]>
+	</select>
+
+	<!-- 交流列表获取 -->
+	<select id="selectDiscussionInfo"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Discussion"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Discussion">
+		<![CDATA[
+			SELECT a.*
+			,rownum AS rownumber 
+			FROM (select 
+			c.discussionId,
+			c.discussionContent,
+			f.name As createdBy,
+			c.creationTime as creationTime,
+			nvl(d.replyCount,0) as replyCount,
+			nvl(e.dynamiCount,0) as dynamicCount,
+			nvl(g.shareCount,0) as shareCount,
+			nvl(h.collectCount,0) as collectCount,
+			f.PhotoUrl AS authorPhotoUrl
+			from II_Discussion c
+			left join (
+			select targetId,count(*) AS replyCount from II_DiscussionReplay
+			group by targetId
+			) d on d.targetId = c.discussionId
+			left join (
+			select ModuleId,count(*) AS dynamiCount from II_Dynamic where dynamicType= 7
+			group by moduleId
+			) e on e.moduleId = c.discussionId
+			left join (
+			select ModuleId,count(*) AS shareCount from II_Share where shareType= 7
+			group by moduleId
+			) g on g.moduleId = c.discussionId
+			left join (
+			select ModuleId,count(*) AS collectCount from II_Collect where collectType= 7
+			group by moduleId
+			) h on h.moduleId = c.discussionId
+			left join IB_userInfo f ON c.CreatedBy=f.userId
+			where c.deleteflg = 0 
+			and c.Subject=#{subject jdbcType=VARCHAR} 
+			and c.OrganizationId=#{organizationId jdbcType=INTEGER}]]>
+
+		<if test="discussionId > 0">
+			<if test="direction == 1">
+				<![CDATA[ 
+	                AND c.discussionId > #{discussionId} 
+	           ]]>
+			</if>
+			<if test="direction == 0">
+				<![CDATA[ 
+	                AND c.discussionId < #{discussionId} 
+	           ]]>
+			</if>
+		</if>
+			<![CDATA[ 
+			ORDER BY c.discussionId desc
+					) a WHERE rownum <= #{count jdbcType=INTEGER}	
+		]]>
+	</select>
+
+	<!-- 交流信息保存 -->
+	<insert id="publishMessage"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Discussion">
+		<![CDATA[
+		insert into II_Discussion (
+		discussionId,
+		organizationId,
+		subject,
+		discussionContent,
+		createdBy,
+		lastUpdatedBy,
+		creationTime,
+		lastUpdateTime,
+		deleteFlg,
+		discussionLevel,
+		sources
+		)
+		values(
+		SEQ_dission.nextval,
+		#{organizationId jdbcType=INTEGER},
+		#{subject jdbcType=VARCHAR},
+		#{discussionContent jdbcType=VARCHAR},
+		#{createdBy jdbcType=VARCHAR},
+		#{lastUpdatedBy jdbcType=VARCHAR},
+		#{creationTime jdbcType=DATE},
+		#{lastUpdateTime jdbcType=DATE},
+		0,
+		1,
+		0
+		)
+		]]>
+	</insert>
+
+	<!-- 我的社区（该用户发表的交流信息）（自用） -->
+	<select id="mypublishCollect"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Discussion"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Discussion">
+		<![CDATA[
+			SELECT b.*FROM (
+			SELECT a.*
+			,rownum AS rownumber 
+			FROM (select 
+			c.discussionId,
+			c.discussionContent,
+			c.createdBy,
+			d.name as authorName,
+			c.creationTime,
+			count(*) over() dataCount
+			from II_Discussion c
+			left join IB_userInfo d ON c.CreatedBy=d.userId
+			where c.deleteflg = 0 
+			and c.createdBy=#{createdBy} 
+			ORDER BY c.creationTime desc
+					) a WHERE rownum <= #{endNumber jdbcType=INTEGER} 	
+			) b	WHERE b.rownumber >= #{startNumber jdbcType=INTEGER} 
+		]]>
+	</select>
+
+	<!-- 我的社区（该用户发表的交流信息） -->
+	<select id="selectMypublishCollect"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Discussion"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Discussion">
+		<![CDATA[
+			SELECT a.*
+			,rownum AS rownumber 
+			FROM (select 
+			c.discussionId,
+			c.discussionContent,
+			c.createdBy,
+			d.name as authorName,
+			c.creationTime
+			from II_Discussion c
+			left join IB_userInfo d ON c.CreatedBy=d.userId
+			where c.deleteflg = 0 
+			and c.createdBy=#{createdBy} ]]>
+		<if test="discussionId > 0">
+			<if test="direction == 1">
+				<![CDATA[ 
+	                AND c.discussionId > #{discussionId} 
+	           ]]>
+			</if>
+			<if test="direction == 0">
+				<![CDATA[ 
+	                AND c.discussionId < #{discussionId} 
+	           ]]>
+			</if>
+		</if>
+			
+			<![CDATA[
+			ORDER BY c.discussionId desc
+					) a WHERE rownum <= #{count jdbcType=INTEGER}	
+		]]>
+	</select>
+
+	<!-- 交流信息批量删除（逻辑删除） -->
+	<update id="deleteList" parameterType="java.util.Map">
+		update II_Discussion b set b.deleteFlg=1 where b.discussionId in
+		<foreach collection="idList" item="item" index="index" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+</mapper>

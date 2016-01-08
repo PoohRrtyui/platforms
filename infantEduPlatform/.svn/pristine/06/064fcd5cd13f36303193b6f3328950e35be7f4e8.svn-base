@@ -1,0 +1,14 @@
+package com.xunyun.infanteduplatform.persistent;
+
+import java.util.List;
+
+import com.xunyun.infanteduplatform.domain.ClassManageEntity;
+import com.xunyun.infanteduplatform.domain.SysUserInorg;
+
+public interface ClassManageMapper {
+  
+  public List queryclass(ClassManageEntity classmanageentity);
+  
+  public List queryclassteacher(SysUserInorg sysuserinorg);
+
+}

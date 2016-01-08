@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.ClassManageMapper">
+    <!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache" /> -->
+    <resultMap type="com.xunyun.infanteduplatform.domain.ClassManageEntity"
+               id="ClassEntityResultMap">
+        <result column="classId" property="classId" jdbcType="INTEGER"/>
+        <result column="classCode" property="classCode" jdbcType="VARCHAR"/>
+        <result column="classStyle" property="classStyle" jdbcType="VARCHAR"/>
+        <result column="className" property="className" jdbcType="VARCHAR"/>
+        <!-- <result column="establishmentDate" property="establishmentDate"
+            jdbcType="DATE" /> -->
+        <result column="schoolingLength" property="schoolingLength"
+                jdbcType="INTEGER"/>
+        <result column="classTypeCode" property="classTypeCode"
+                jdbcType="VARCHAR"/>
+        <result column="homePageUrl" property="homePageUrl" jdbcType="VARCHAR"/>
+        <result column="ipAddress" property="ipAddress" jdbcType="VARCHAR"/>
+        <result column="deleteFlg" property="deleteFlg" jdbcType="VARCHAR"/>
+        <result column="creationTime" property="creationTime" jdbcType="DATE"/>
+        <result column="createdBy" property="createdBy" jdbcType="VARCHAR"/>
+        <result column="lastupdateTime" property="lastupdateTime"
+                jdbcType="DATE"/>
+        <result column="lastupdatedBy" property="lastupdatedBy"
+                jdbcType="VARCHAR"/>
+        <result column="mainTeacherName" property="mainTeacherName"
+                jdbcType="VARCHAR"/>
+        <result column="withTeacherName" property="withTeacherName"
+                jdbcType="VARCHAR"/>
+        <result column="nurserygovernessName" property="nurserygovernessName"
+                jdbcType="VARCHAR"/>
+        <result column="mainTeacherId" property="mainTeacherId"
+                jdbcType="INTEGER"/>
+        <result column="withTeacherId" property="withTeacherId"
+                jdbcType="INTEGER"/>
+        <result column="nurserygovernessId" property="nurserygovernessId"
+                jdbcType="INTEGER"/>
+        <result column="userId" property="userId" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="countNumber" property="countNumber" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap type="com.xunyun.infanteduplatform.domain.SysUserInorg"
+               id="SysUserInorgResultMap">
+        <result column="userId" property="userId" jdbcType="INTEGER"/>
+        <result column="organizationCode" property="organizationCode"
+                jdbcType="VARCHAR"/>
+        <result column="organizationType" property="organizationType"
+                jdbcType="VARCHAR"/>
+        <result column="userType" property="userType" jdbcType="INTEGER"/>
+        <result column="deleteFlg" property="deleteFlg" jdbcType="INTEGER"/>
+        <result column="startTime" property="startTime" jdbcType="DATE"/>
+        <result column="userCode" property="userCode" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="mainTeacherId" property="mainTeacherId"
+                jdbcType="VARCHAR"/>
+        <result column="nurserygovernessId" property="nurserygovernessId"
+                jdbcType="VARCHAR"/>
+        <result column="withTeacherId" property="withTeacherId"
+                jdbcType="VARCHAR"/>
+        <result column="classId" property="classId" jdbcType="INTEGER"/>
+        <result column="isAdmin" property="isAdmin" jdbcType="INTEGER"/>
+        <result column="nickName" property="nickName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap type="com.xunyun.infanteduplatform.domain.UserInClassEntity"
+               id="UserInClassEntityResultMap">
+        <result column="userId" property="userId" jdbcType="INTEGER"/>
+        <result column="classId" property="classId" jdbcType="INTEGER"/>
+        <result column="organizationId" property="organizationId"
+                jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap type="com.xunyun.infanteduplatform.domain.TeacherInClassEntity"
+               id="TeacherInClassEntityResultMap">
+        <result column="userId" property="userId" jdbcType="INTEGER"/>
+        <result column="classId" property="classId" jdbcType="INTEGER"/>
+        <result column="organizationId" property="organizationId"
+                jdbcType="INTEGER"/>
+        <result column="type" property="type" jdbcType="INTEGER"/>
+    </resultMap>
+
+
+    <!-- 初始班级查询 -->
+    <select id="queryclass" resultMap="ClassEntityResultMap">
+        <![CDATA[
+ SELECT b.* FROM (
+        SELECT 
+        a.*,
+        rownum AS rownumber
+        FROM (
+select classid,
+       classname,
+       ESTABLISHMENTDATE,
+       mainTeacherName,
+       withTeacherName,
+       nurserygovernessName,
+       usercount,
+       schoolname, COUNT(*) OVER() COUNTNUMBER
+  from (select c.classid,
+               c.classname,
+               c.establishmentdate,
+               tc.userid,
+               u.name as mainTeacherName,
+               tcp.userid,
+               up.name as withTeacherName,
+               tcb.userid,
+               ub.name as nurserygovernessName,
+               nvl(uc.userCount, 0) as usercount,
+               s.schoolname
+          from ib_classinfo c
+          left join ib_classinforelation cr
+            on cr.classid = c.classid
+          left join ib_teacherinclass tc
+            on tc.classid = c.classid
+           and tc.type = 1
+          left join ib_userinfo u
+            on u.userid = tc.userid
+          left join ib_teacherinclass tcp
+            on tcp.classid = c.classid
+           and tcp.type = 2
+          left join ib_userinfo up
+            on up.userid = tcp.userid
+          left join ib_teacherinclass tcb
+            on tcb.classid = c.classid
+           and tcb.type = 3
+          left join ib_userinfo ub
+            on ub.userid = tcb.userid
+          left join (select count(*) AS userCount, ClassId
+                      from ib_UserInClass
+                     group by ClassId) uc
+            on uc.classid = c.classid
+          left join ib_classinforelation csr
+            on csr.classid = c.classid
+          left join ib_schoolinfo s
+            on s.schoolid = csr.schoolid
+         where cr.schoolid = #{schoolId}) q
+         )a 
+	WHERE rownum <=  #{endNumber jdbcType=INTEGER} 	 	
+			) b	WHERE b.rownumber >= #{startNumber jdbcType=INTEGER}
+
+]]>
+    </select>
+
+    <!--修改班级时获取该班级的信息 -->
+    <select id="queryupdateclassinfo" resultMap="ClassEntityResultMap">
+        select
+        l.classId As
+        classId,
+        l.className As className,
+        l.classStyle As classStyle
+        from
+        ib_classinfo l
+        where l.classId=#{classId}
+    </select>
+
+    <!-- 修改时获取班级主班老师信息 -->
+    <select id="queryupdateclassmainteacher" resultMap="ClassEntityResultMap">
+        select
+        l.classId AS classId,
+        l.type AS type,
+        l.userId AS userId,
+        t.name AS name
+        from ib_TEACHERINCLASS l
+        left join ib_USERINFO t
+        on t.userId = l.userId
+        where
+        classId=#{classId} and type='1'
+    </select>
+
+    <!-- 修改时获取班级配班信息 -->
+    <select id="queryupdateclasswithteacher" resultMap="ClassEntityResultMap">
+        select
+        l.classId AS classId,
+        l.type AS type,
+        l.userId AS userId,
+        t.name AS name
+        from ib_TEACHERINCLASS l
+        left join ib_USERINFO t
+        on t.userId = l.userId
+        where
+        classId=#{classId} and type='2'
+    </select>
+
+    <!-- 修改时获取班级保育员信息 -->
+    <select id="queryupdatenurserygoverness" resultMap="ClassEntityResultMap">
+        select
+        l.classId AS classId,
+        l.type AS type,
+        l.userId AS userId,
+        t.name AS name
+        from ib_TEACHERINCLASS l
+        left join ib_USERINFO t
+        on t.userId = l.userId
+        where
+        classId=#{classId} and type='3'
+    </select>
+
+    <!-- 修改班级时将教师任教表中被替换的教师信息删除 -->
+    <delete id="deletemainteacherinclass">
+        delete ib_TeacherInClass l where l.userId=#{userId}
+    </delete>
+
+
+    <!-- 修改班级教师时将新选择的主班老师在教师任教表增加数据 -->
+    <insert id="insertclassmainteacherinclass">
+        insert into
+        ib_TeacherInClass(userId,organizationId,classId,type)
+        values(#{userId},#{organizationId},#{classId},#{type})
+    </insert>
+
+
+    <!-- 增加班级时查询教师信息 -->
+    <select id="queryclassteacher" resultMap="SysUserInorgResultMap">
+        <![CDATA[
+	 select u.userid, ui.name
+     from ib_userinorg u
+
+      inner join ib_userinfo ui
+      on u.userid = ui.userid
+      where u.organizationid = #{organizationId}
+     and u.usertype = 4
+     and u.userid not in
+       (select tc.userid from ib_teacherinclass tc where tc.organizationid = #{organizationId})
+
+	 ]]>
+        <if test="mainTeacherId != null and !''.equals(mainTeacherId)">
+            <![CDATA[
+	  and u.userId<>#{mainTeacherId}
+		 	 ]]>
+        </if>
+        <if test="nurserygovernessId != null and !''.equals(nurserygovernessId)">
+            <![CDATA[
+	  and u.userId<>#{nurserygovernessId} 
+		 	 ]]>
+        </if>
+        <if test="withTeacherId != null and !''.equals(withTeacherId)">
+            <![CDATA[
+	  and u.userId<>#{withTeacherId}   
+		 	 ]]>
+        </if>
+    </select>
+
+    <!-- 逻辑删除classinfo信息 -->
+    <update id="updateclassdeleteflg">
+        <![CDATA[update ib_CLASSINFO l]]>
+        <set>
+            <![CDATA[
+     l.deleteFlg='1'
+     ]]>
+            where l.classId=#{classId}
+        </set>
+    </update>
+
+    <!-- 添加班级时班级名称查重 -->
+    <select id="queryrepeatclassname" resultMap="ClassEntityResultMap">
+        select
+        l.classId,
+        l.className,
+        l.deleteFlg,
+        t.schoolId
+        from ib_classinfo l
+        left join ib_CLASSINFORELATION t
+        on l.classId=t.classId
+        where l.deleteFlg='0'
+        <if test="schoolId != null">
+            and t.schoolId=#{schoolId}
+        </if>
+        <if test="className != null">
+            and l.classname=#{className}
+        </if>
+    </select>
+
+    <!-- 添加班级时班级代码查重 -->
+    <select id="queryrepeatclasscode" resultMap="ClassEntityResultMap">
+        select
+        l.classCode,
+        l.deleteFlg
+        from ib_classinfo l where l.deleteFlg='0' and l.classCode=#{classCode}
+    </select>
+
+    <!-- 修改时班级名称查重 -->
+    <select id="queryupdaterepeatclassname" resultMap="ClassEntityResultMap">
+        <![CDATA[
+       select
+       l.classId,
+       l.className,
+       l.deleteFlg,
+       t.schoolId
+       from ib_classinfo l
+       left join ib_CLASSINFORELATION t
+       on l.classId=t.classId
+       where l.deleteFlg='0' and t.schoolId=#{schoolId} and l.classname=#{className} and l.classId<>#{classId}
+       ]]>
+    </select>
+
+
+    <!-- 添加班级classinfo信息 -->
+    <insert id="insertclass" useGeneratedKeys="true"
+            parameterType="com.xunyun.infanteduplatform.domain.ClassManageEntity">
+        <selectKey resultType="Integer" order="BEFORE" keyProperty="classId">
+            select SEQ_CLASSINFO.nextval from dual
+        </selectKey>
+        insert into
+        ib_CLASSINFO(classId,classCode,classStyle,className,establishmentDate,schoolingLength,
+        deleteFlg,creationTime,createdBy,lastupdateTime,lastupdatedBy)
+        values(#{classId},#{classCode},#{classStyle},#{className},#{establishmentDate},#{schoolingLength},
+        '0',#{creationTime},#{createdBy},#{lastupdateTime},#{lastupdatedBy})
+    </insert>
+
+    <!-- 添加班级学校关联表信息 -->
+    <insert id="insertclassinforelation">
+        insert into ib_CLASSINFORELATION(classId,schoolId)
+        values(#{classId},#{schoolId})
+    </insert>
+
+    <!--教师任教表中添加主班老师信息 -->
+    <insert id="insertmainteacherinclass">
+        insert into
+        ib_TeacherInClass(userId,organizationId,classId,type)
+        values(#{mainTeacherId},#{organizationId},#{classId},'1')
+    </insert>
+
+    <!--教师任教表中添加副班老师信息 -->
+    <insert id="insertwithteacherinclass">
+        insert into
+        ib_TeacherInClass(userId,organizationId,classId,type)
+        values(#{withTeacherId},#{organizationId},#{classId},'2')
+    </insert>
+
+    <!--教师任教表中添加保育员老师信息 -->
+    <insert id="insertnurserygovernessid">
+        insert into
+        ib_TeacherInClass(userId,organizationId,classId,type)
+        values(#{nurserygovernessId},#{organizationId},#{classId},'3')
+    </insert>
+
+    <!-- 用户所属机构表中修改主班用户类型 -->
+    <update id="updatemainteacherinorg">
+        <![CDATA[update ib_USERINORG l]]>
+        <set>
+            <![CDATA[
+      l.organizationId=#{organizationId} , l.userType='4'
+     ]]>
+            where l.userId=#{mainTeacherId}
+        </set>
+    </update>
+
+    <!-- 用户所属机构表中修改副班用户类型 -->
+    <update id="updatewithteacherinorg">
+        <![CDATA[update ib_USERINORG l]]>
+        <set>
+            <![CDATA[
+      l.organizationId=#{organizationId} , l.userType='4'
+     ]]>
+            where l.userId=#{withTeacherId}
+        </set>
+    </update>
+
+    <!-- 用户所属机构表中修改保育员用户类型 -->
+    <update id="updatenurserygovernessinorg">
+        <![CDATA[update ib_USERINORG l]]>
+        <set>
+            <![CDATA[
+      l.organizationId=#{organizationId} , l.userType='1'
+     ]]>
+            where l.userId=#{nurserygovernessId}
+        </set>
+    </update>
+
+    <!-- 删除classinforelation信息 -->
+    <delete id="deleteclassinforelation">
+        <![CDATA[
+	   delete ib_CLASSINFORELATION l
+	   where l.classId=#{classId}
+	]]>
+    </delete>
+
+    <!-- 修改班级时，在classinfo中修改班级名称及班级类型 -->
+    <update id="updateclassinfo">
+        <![CDATA[update ib_classinfo l]]>
+        <set>
+            <![CDATA[
+      l.className=#{className} , l.classStyle=#{classStyle}
+        ]]>
+            where l.classId=#{classId}
+        </set>
+    </update>
+
+    <!-- 修改班级时修改最终修改人与最终修改时间 -->
+    <update id="updateclassupdateinfo">
+        update ib_classinfo l
+        <set>
+            l.lastupdatedBy=#{lastupdatedBy},l.lastupdateTime=#{lastupdateTime}
+        </set>
+        where l.classId=#{classId}
+
+    </update>
+
+    <!-- 删除班级时查询该学校该班级下是否有学生存在 -->
+    <select id="queryclassstudents" resultMap="UserInClassEntityResultMap">
+        select
+        l.userId as
+        userId,
+        l.classId as classId,
+        l.organizationId as organizationId
+        from
+        ib_USERINCLASS l where l.classId=#{classId} and
+        l.organizationId=#{organizationId}
+
+    </select>
+
+    <!-- 删除班级时查询该学校该班级下是否有普通教师存在 -->
+    <select id="queryclassteachers" resultMap="TeacherInClassEntityResultMap">
+        <![CDATA[
+		select
+		l.userId as userId,
+		l.classId as classId,
+		l.type as type,
+		l.organizationId as organizationId
+		from
+		ib_TEACHERINCLASS l where l.classId=#{classId}  and l.type='0'
+		]]>
+    </select>
+
+
+    <!-- 删除teacherinclass中该班级下的主班，配班，保育员老师 -->
+    <delete id="deletespecialteacherinclass">
+        <![CDATA[
+	 delete ib_TEACHERINCLASS l where l.classId=#{classId} and type<>'0'
+	]]>
+    </delete>
+
+    <!-- 进入首页时查询的登陆用户信息，判断其权限进行左侧菜单显示 -->
+    <select id="querylogininfo" resultMap="SysUserInorgResultMap">
+        select l.userid,
+        l.organizationId,
+        l.organizationtype,
+        l.isadmin,
+        ul.nickName,
+        ul.photourl
+        from ib_USERINORG l
+        left join ib_UserInfo ul
+        on l.userid=ul.userid
+        where l.userid=#{userId}
+    </select>
+
+    <select id="queryClassBySchoolId"
+            parameterType="com.xunyun.infanteduplatform.domain.ClassManageEntity"
+            resultMap="ClassEntityResultMap">
+        select
+        l.classId,
+        l.className,
+        l.deleteFlg,
+        t.schoolId
+        from ib_classInfo l
+        left join ib_classInfoRelation t
+        on l.classId=t.classId
+        where l.deleteFlg='0'
+        <if test="schoolId != null">
+            and t.schoolId=1
+        </if>
+    </select>
+</mapper>

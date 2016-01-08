@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.TeacherInClassMapper">
+    <update id="updateTeaInClass"
+            parameterType="com.xunyun.infanteduplatform.domain.TeacherInClassEntity">
+        update ib_teacherInClass
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="organizationId != null">
+                organizationId = #{organizationId},
+            </if>
+            <if test="classId != null">
+                classId = #{classId},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+        </trim>
+        where userId = #{userId}
+    </update>
+
+    <select id="queryTeaInClass" parameterType="com.xunyun.infanteduplatform.domain.TeacherInClassEntity">
+        select it.userId,it.organizationId,it.classId,it.type
+        from ib_teacherInClass it
+        where 1=1
+        <if test="userId != null">
+            and it.userId = #{userId}
+        </if>
+        <if test="organizationId != null">
+            and it.organizationId = #{organizationId}
+        </if>
+        <if test="classId != null">
+            and it.classId = #{classId}
+        </if>
+    </select>
+
+    <select id="queryClassByUserId" parameterType="com.xunyun.infanteduplatform.domain.SysUserInorg"
+            resultType="com.xunyun.infanteduplatform.domain.ClassManageEntity">
+        SELECT
+        ic.classId,
+        ic.CLASSNAME
+        FROM Ib_TeacherInClass it
+        LEFT JOIN IB_classInfo ic
+        ON it.classId = ic.classId
+        WHERE userId = #{userId}
+    </select>
+</mapper>

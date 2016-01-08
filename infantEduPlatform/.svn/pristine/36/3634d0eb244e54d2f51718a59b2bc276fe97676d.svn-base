@@ -1,0 +1,40 @@
+package com.xunyun.infanteduplatform.domain.interaction;
+
+import java.util.Date;
+
+public class ReplayModel {
+  
+    private String ReplayContent;
+    //回复时间
+    private Date ReplayTime;
+    //回复时间String
+    private String strReplayTime;
+    
+    private String name;
+    
+    public String getName() {
+      return name;
+    }
+    public void setName(String name) {
+      this.name = name;
+    }
+    public String getReplayContent() {
+      return ReplayContent;
+    }
+    public void setReplayContent(String replayContent) {
+      ReplayContent = replayContent;
+    }
+    public Date getReplayTime() {
+      return ReplayTime;
+    }
+    public void setReplayTime(Date replayTime) {
+      ReplayTime = replayTime;
+    }
+    public String getStrReplayTime() {
+      return strReplayTime;
+    }
+    public void setStrReplayTime(String strReplayTime) {
+      this.strReplayTime = strReplayTime;
+    }
+    
+}

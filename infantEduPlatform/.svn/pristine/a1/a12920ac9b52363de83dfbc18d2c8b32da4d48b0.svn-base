@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.BureauMapper">
+    <!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache" /> -->
+    <resultMap type="com.xunyun.infanteduplatform.domain.BureauInfo" id="BureauInfoResultMap">
+        <result column="organizationId" property="organizationId" jdbcType="NUMERIC"/>
+        <result column="bureauName" property="bureauName" jdbcType="VARCHAR"/>
+        <result column="parentBureauId" property="parentBureauId" jdbcType="NUMERIC"/>
+        <result column="isChild" property="isChild" jdbcType="INTEGER"/>
+        <result column="parentBureauName" property="parentBureauName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 查询单位列表 -->
+    <select id="queryBureauList" resultMap="BureauInfoResultMap" parameterType="java.util.Map">
+        select b.organizationId,b.bureauName,br.parentBureauId,br.isChild from ib_bureauInfo b
+        inner join ib_bureauRelation br
+        on br.bureauId = b.organizationId
+        where b.deleteFlg =0
+        <if test="oid != null">
+            <if test="oid  == -1">
+                and br.bureauId =#{id}
+            </if>
+            <if test="oid  != -1">
+                and br.parentBureauId = #{id}
+            </if>
+        </if>
+    </select>
+
+    <select id="queryBureauInfo" resultMap="BureauInfoResultMap" parameterType="Integer">
+        select b.organizationId,
+        b.organizationCode,
+        b.orgType,
+        b.bureauName,
+        b.dutyPerson,
+        b.locationCode,
+        b.bureauAddress,
+        b.homepageUrl,
+        b.telephone,
+        b.postalCode,
+        br.parentBureauId,
+        bl.bureauname as parentBureauName
+        from ib_bureauInfo b
+        left join ib_bureauRelation br
+        on br.bureauId = b.organizationId
+        left join ib_bureauInfo bl
+        on br.parentBureauId = bl.organizationId
+        where b.organizationId = #{bureauId}
+    </select>
+
+    <!--添加单位信息-->
+    <insert id="saveBureauInfo" parameterType="com.xunyun.infanteduplatform.domain.BureauInfo"
+            useGeneratedKeys="true">
+        <selectKey resultType="Integer" order="BEFORE" keyProperty="organizationId">
+            select SEQ_BUREAUINFO.nextval from dual
+        </selectKey>
+        insert into ib_bureauInfo(organizationId,organizationCode,bureauName,bureauAddress,
+        homepageUrl,telephone,dutyPerson,postalCode,orgType,locationCode,deleteFlg,
+        createdBy,creationTime,lastUpdateTime,lastUpdatedBy)
+        values
+        (#{organizationId},#{organizationId},#{bureauName},#{bureauAddress},
+        #{homepageUrl},#{telephone},#{dutyPerson},#{postalCode},#{orgType},#{locationCode},
+        #{deleteFlg},#{createdBy},#{creationTime},#{lastUpdateTime},#{lastUpdatedBy})
+    </insert>
+
+    <!--添加单位关联信息-->
+    <insert id="saveBureauRelation" parameterType="com.xunyun.infanteduplatform.domain.BureauRelation">
+        insert into ib_bureauRelation (bureauId,parentBureauId,isChild)
+        values
+        (#{bureauId},#{parentBureauId},#{isChild})
+    </insert>
+
+    <!--修改单位关联信息-->
+    <update id="updateBureauRelation" parameterType="com.xunyun.infanteduplatform.domain.BureauRelation">
+            update ib_bureauRelation
+                set parentBureauId = #{parentBureauId}
+            where bureauId = #{bureauId}
+    </update>
+    <!--修改单位信息-->
+    <update id="updateBureauInfo" parameterType="com.xunyun.infanteduplatform.domain.BureauInfo">
+        update ib_bureauInfo
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="organizationCode != null ">
+                organizationCode=#{organizationCode},
+            </if>
+            <if test="bureauName != null ">
+                bureauName=#{bureauName},
+            </if>
+            <if test="bureauAddress != null ">
+                bureauAddress = #{bureauAddress},
+            </if>
+            <if test="homepageUrl != null ">
+                homepageUrl = #{homepageUrl},
+            </if>
+            <if test="telephone != null ">
+                telephone = #{telephone},
+            </if>
+            <if test="dutyPerson != null ">
+                dutyPerson = #{dutyPerson},
+            </if>
+            <if test="postalCode != null ">
+                postalCode = #{postalCode},
+            </if>
+            <if test="orgType != null ">
+                orgType=#{orgType},
+            </if>
+        </trim>
+        where organizationId = #{organizationId}
+    </update>
+
+    <!--单位逻辑删除-->
+    <update id="deleteBureau" parameterType="Integer">
+        update ib_bureauInfo set deleteFlg = 1 where organizationId = #{organizationId}
+    </update>
+
+    <!--删除单位关联信息-->
+    <delete id="deleteBureauRel" parameterType="Integer">
+            delete ib_bureauRelation where bureauId = #{bureauId}
+    </delete>
+    <!--修改isChild属性-->
+    <select id="updateParentBureauId" statementType="CALLABLE">
+        <![CDATA[
+            {call p_br_update_pid (#{parentBureauId,mode=IN,jdbcType=INTEGER})}
+        ]]>
+    </select>
+
+    <select id="queryBureau" parameterType="com.xunyun.infanteduplatform.domain.BureauInfo" resultType="Integer">
+        select count(0)
+        from ib_BureauInfo b
+        inner join ib_bureauRelation br
+        on b.organizationId = br.bureauId
+        where b.deleteFlg = 0
+        <if test="bureauName != null and ''!= bureauName">
+                and b.bureauName = #{bureauName} and br.parentBureauId = #{parentBureauId}
+        </if>
+        <if test="organizationCode !=null">
+            and b.organizationCode = #{organizationCode}
+        </if>
+        <if test="organizationId != null">
+            and b.organizationId != #{organizationId}
+        </if>
+    </select>
+</mapper>

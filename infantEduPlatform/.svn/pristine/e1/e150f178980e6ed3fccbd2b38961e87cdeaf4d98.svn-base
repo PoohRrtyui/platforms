@@ -1,0 +1,329 @@
+           //获取项目url（含端口）
+           var serverUrl = window.location.host;
+           // 获取项目名称
+           var serverProPath = window.location.pathname;
+           var serverProName = serverProPath.split("/")[1];
+           // 拼接项目访问地址
+           var projectUrl = "http://" + serverUrl + "/" + serverProName;
+
+var table;
+var appInfo = {
+	init : function() {
+
+		appInfo.message();
+		appInfo.addAppInfo();
+		appInfo.checkAll();
+		appInfo.openList();
+		appInfo.closeList();
+		appInfo.deleteList();
+
+	},
+	// dataTables数据表查询
+	message : function() {
+		
+		var tpl = $("#tpl").html();
+		// 预编译模板
+		var template = Handlebars.compile(tpl);
+		$('#example1')
+				.DataTable(
+						{
+							
+							// 服务器数据加载
+							serverSide : true,
+							// 搜索框
+							searching : true,
+							// 分页框
+							lengthChange : false,
+							// 分页数（数组）
+							lengthMenu : [ 10 ],
+							// 列头排序
+							ordering: false,
+							ajax : {
+								type : 'post',
+								url : 'appInfo/queryAppInfo'
+							},
+							columns : [
+							{
+								data : null,
+								render: function ( data, type, row ) {
+				                        return '<input type="checkbox" name="chkOne" class="editor-active" value="'+data.appId+'" state="'+data.state+'">';
+				                }
+							}, {
+								"data" : "appCode"
+							}, {
+								"data" : "appName"
+							}, {
+								"data" : "platformName"
+							}, {
+								"data" : "locationName"
+							}, {
+								"data" : "stateName"
+							}, {
+								"data" : "iconUrl",
+								render: function ( data, type, row ) {
+				                        return '<img id="iconUrl" height="30" width="30" src="'+projectUrl+data+'">';
+				                }				
+							},{
+								"data" : null
+							}],
+							columnDefs : [ {							
+								targets : 7,
+								render : function(data) {
+									var context = {
+										func : [
+												{
+													"name" : "修改",
+													"fn" : "appInfo.edit(\'"
+															+ data.appId
+															+ "\',\'"
+															+ data.appName
+															+ "\',\'"
+															+ data.platform
+															+ "\',\'"
+															+ data.locationCode
+															+ "\',\'"
+															+ data.iconUrl
+															+ "\',\'"
+															+ data.summery
+															+ "\')",
+													"type" : "primary"
+												}]
+									};
+									var html = template(context);
+									return html;
+								}
+							}
+
+							],
+							"language" : {
+								"lengthMenu" : "_MENU_ 条记录每页",
+								"zeroRecords" : "没有找到记录",
+								"info" : "第 _PAGE_ 页 ( 总共 _PAGES_ 页 )",
+								"infoEmpty" : "无记录",
+								"infoFiltered" : "(从 _MAX_ 条记录过滤)",
+								"paginate" : {
+									"previous" : "上一页",
+									"next" : "下一页"
+								}
+							},
+							"dom" : "<'row'<'col-xs-2'l><'#mytool.col-xs-4'><'col-xs-6'f>r>"
+									+ "t" + "<'row'<'col-xs-6'i><'col-xs-6'p>>",
+
+						});
+	},
+
+	// 修改跳转页面
+	edit : function(appId,appName, platform, locationCode,
+			iconUrl, summery) {
+		debugger;
+		location.href ="appInfo/updateAppInfo?id="+appId;
+/*		$.ajax({
+			async : false,
+			type : "post",
+			url : "appInfo/updateAppInfo",
+			success : function(data){
+				debugger;
+				layer.open({
+				    type: 1,
+				    title: false,
+				    closeBtn: 1,
+				    area: ['780px', '600px'],				    
+				    shadeClose: true,
+				    content: data
+				});	
+				
+				$(".form-group").show();
+				$("#appId").val(appId);
+				$("#appName").val(appName);
+				$("#platform").val(platform);
+				$("#locationCode").val(locationCode);
+				$("#original").attr("src",projectUrl+iconUrl);
+				$("#original").val(iconUrl);
+				$("#summery").val(summery);
+			}
+		});*/
+	},
+
+	 //删除功能 
+	del : function(appId,state) {
+		
+		var value = state;
+		if (value == 2) {
+			layer.confirm("确认删除吗？", {
+				icon : 3,
+				title : '提示'
+			}, function() {
+				
+				$.ajax({
+					url : "appInfo/deleteAppInfo",
+					type : "POST",
+					data : {
+						"id" : appId
+					},
+					success : function(data) {
+						layer.closeAll();
+						layer.msg("删除成功!", {
+							icon : 1
+						});
+						$('#example1').DataTable().ajax.reload();
+					},
+					error : function(data) {
+						layer.msg("操作失败!", {
+							icon : 1
+						});
+					}
+				});
+			});
+
+		} else {
+			layer.msg("请关闭之后再删除!", {
+				icon : 4
+			});
+		}
+	},
+
+	 //点击增加跳转页面 
+	addAppInfo : function() {
+		$("#addAppInfo").on("click",function() {
+			location.href ="appInfo/updateAppInfo";
+/*			$.ajax({
+				async : false,
+				type : "post",
+				url : "appInfo/updateAppInfo",
+				success : function(data){	
+					layer.open({
+					    type: 1,
+					    title: false,
+					    closeBtn: 1,
+					    area: ['780px', '600px'],				    
+					    shadeClose: true,
+					    content: data
+					});		
+				}
+			});*/
+		});
+	},
+	
+
+	 
+	//全选功能
+	 checkAll:function(){
+		$(document).on("click",".chkAll",function(obj){
+			$("input[name='chkOne']").prop("checked", this.checked);
+			
+		});
+	},
+	
+	//批量修改状态（开启）
+	openList:function(){
+		$("#openList").on("click",function(){
+			debugger;
+			var id = new Array();
+			$(":checkbox[name='chkOne']").each(function (){
+				if($(this).prop("checked")){
+					id.push($(this).val());
+				}			
+		});
+			var ids = id.toString();
+			if(ids.length!=0){
+				$.ajax({
+					url : 'appInfo/updateList',
+					type : "POST",
+					data : {
+						"ids" : ids
+					},
+					success : function(data) {
+						$('#example1').DataTable().ajax.reload();
+						layer.msg('操作成功！', {icon: 1});
+						$("input[name='chkAll']").prop("checked", false);
+						
+					},
+					error : function(data) {
+						layer.msg('操作失败！', {icon: 2});
+						
+					}
+				});
+		}else{
+			layer.msg('请选择！', {icon: 10});
+		}
+			
+		});
+	},
+	//批量修改状态(关闭)
+	closeList:function(){
+		$("#closeList").on("click",function(){
+			debugger;
+			var id = new Array();
+			$(":checkbox[name='chkOne']").each(function (){
+				if($(this).prop("checked")){
+					id.push($(this).val());
+				}			
+		});
+			var ids = id.toString();
+			if(ids.length!=0){
+				$.ajax({
+					url : 'appInfo/closeList',
+					type : "POST",
+					data : {
+						"ids" : ids
+					},
+					success : function(data) {
+						$('#example1').DataTable().ajax.reload();
+						layer.msg('操作成功！', {icon: 1});
+						$("input[name='chkAll']").prop("checked", false);
+						
+					},
+					error : function(data) {
+						layer.msg('操作失败！', {icon: 2});
+						
+					}
+				});
+		}else{
+			layer.msg('请选择！', {icon: 10});
+		}
+		});
+	},
+	//批量删除
+	deleteList:function(){
+		$("#deleteList").on("click",function(){
+			debugger;
+			var flag=true;
+			var id = new Array();
+			$(":checkbox[name='chkOne']").each(function (){
+				if($(this).prop("checked")){
+					id.push($(this).val());
+					if($(this).attr("state")!=2){
+						flag=false;					
+					}
+				}			
+		});
+			var ids = id.toString();
+			if(ids.length!=0){
+				if(flag){
+					$.ajax({
+					url : 'appInfo/deleteList',
+					type : "POST",
+					data : {
+						"ids" : ids
+					},
+					success : function(data) {
+						$('#example1').DataTable().ajax.reload();
+						layer.msg('操作成功！', {icon: 1});
+						$("input[name='chkAll']").prop("checked", false);						
+					},
+					error : function(data) {
+						layer.msg('操作失败！', {icon: 2});
+						
+					}
+				});
+				}else{
+					layer.msg('请关闭之后再删除！', {icon: 10});
+				}
+				
+		}else{
+			layer.msg('请选择！', {icon: 10});
+		}
+		});
+	},
+
+};

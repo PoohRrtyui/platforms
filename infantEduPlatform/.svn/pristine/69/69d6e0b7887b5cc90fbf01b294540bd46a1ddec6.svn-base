@@ -1,0 +1,217 @@
+package com.xunyun.infanteduplatform.service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.xunyun.infanteduplatform.domain.SysUserInDepartment;
+import com.xunyun.infanteduplatform.domain.SysUserInfo;
+import com.xunyun.infanteduplatform.domain.SysUserInorg;
+import com.xunyun.infanteduplatform.domain.SysUserLogin;
+import com.xunyun.infanteduplatform.domain.TeacherInClassEntity;
+import com.xunyun.infanteduplatform.domain.UserInClassEntity;
+import com.xunyun.infanteduplatform.domain.interaction.UserInfo;
+import com.xunyun.infanteduplatform.persistent.UserMapper;
+
+@Service("userService")
+public class UserService
+{
+
+	@Autowired
+	private UserMapper userMapper;
+    
+	/**
+     *  根据登陆账号获取用户信息
+     * @param username
+     * @return
+     */
+    public SysUserInfo getUserByUsername(String username){
+    	return this.userMapper.getUserByUsername(username);
+    }
+
+  public List<SysUserInorg> queryUserBySId(Map<Object, Object> dataMap) {
+        return this.userMapper.queryUserBySId(dataMap);
+  }
+
+  public List<SysUserInfo> queryUserByCId(Integer treeId) {
+        return this.userMapper.queryUserByCId(treeId);
+  }
+
+  public List<SysUserInfo> queryStuByCId(Integer treeId) {
+    return this.userMapper.queryStuByCId(treeId);
+  }
+
+  public List<SysUserInfo> queryUserByDId(Integer treeId) {
+    return this.userMapper.queryUserByDId(treeId);
+  }
+
+  public Integer delUserById(Integer userId, Integer schoolId, Integer treeId, Boolean isClass, Integer userType) {
+    Integer status = null;
+//    this.userMapper.delUserById(userId);
+//    this.userMapper.delLogById(userId);
+    if(treeId==null){
+      //初始化页面点击删除
+      this.userMapper.delUDepbyId(userId);
+      this.userMapper.delTClassById(userId);
+      this.userMapper.delUClassById(userId);
+      status = this.userMapper.delUOrgById(userId);
+    }else{
+      if(isClass=true){
+        if(userType==3){
+          //点击班级树删除学生用户
+          this.userMapper.delUOrgById(userId);
+          status = this.userMapper.delUClassById(userId);
+        }else{
+          //点击班级树删除教师用户
+          status = this.userMapper.delTClassById(userId);  
+        }
+      }else{
+        //点击部门删除部门下用户
+          status = this.userMapper.delUDepbyId(userId);
+      }
+    }
+    return status;
+  }
+  
+  /**
+   *  根据登陆账号获取用户信息
+   * @param username
+   * @return
+   */
+  public SysUserInfo findUserById(Integer userId) {
+    return this.userMapper.findUserById(userId);
+  }
+  
+  /**
+   *  根据登陆账号获取用户信息
+   * @param username
+   * @return
+   */
+  public int updateUser(SysUserInfo sInfo) {
+    return this.userMapper.updateUser(sInfo);
+  }
+
+  public Integer saveUserInfo(SysUserInfo userinfo, SysUserLogin loginUser, SysUserInorg userInorg,
+      TeacherInClassEntity teach, UserInClassEntity stu, SysUserInDepartment dept, Integer treeId,
+      Boolean isClass, Integer userType) {
+        Integer status = null;  
+        status = this.userMapper.saveUserInfo(userinfo);
+        Integer userId= userinfo.getUserid();
+        
+        loginUser.setId(userId);
+        status = this.userMapper.saveUserLog(loginUser);
+        if(treeId==null){
+          //初始化页面点击增加
+          userInorg.setUserId(userId);
+          status = this.userMapper.saveUOrg(userInorg);
+        }else{
+          if(isClass){
+            userInorg.setUserId(userId);
+            userInorg.setUserType(userType);
+            status = this.userMapper.saveUOrg(userInorg);
+            if(userType==3){
+              //点击班级树保存学生用户
+              stu.setUserId(userId);
+              stu.setClassId(treeId);
+              status = this.userMapper.saveUClass(stu);
+            }else{
+              //点击班级树保存教师用户
+              teach.setUserId(userId);
+              teach.setClassId(treeId);
+              status = this.userMapper.saveTClass(teach); 
+            }
+          }else{
+            //点击部门保存部门下用户
+              dept.setUserId(userId);
+              dept.setDepartmentId(treeId);
+              status = this.userMapper.saveUDep(dept);
+          }
+        }
+    return status;
+  }
+
+  public Integer updateUserInfo(SysUserInfo userinfo, SysUserLogin loginUser) {
+      Integer status = null;  
+      status = this.userMapper.updateUserInfo(userinfo);
+      status = this.userMapper.updateLogUser(loginUser);
+      return status;
+  }
+
+  public SysUserLogin findPwdById(Integer userId) {
+    return userMapper.findPwdById(userId);
+  }
+
+  public Integer updateAdmin(Map<String, Object> map, Integer userid, Integer schoolId) {
+    Integer count = userMapper.countUserBySchooleId(schoolId);
+    if(count==0){
+    userMapper.setAdmin(userid);
+    }
+    return userMapper.updateAdmin(map);
+    
+  }
+
+  public Integer closeAdmin(Map<String, Object> map) {
+    return userMapper.closeAdmin(map);
+  }
+
+  public Integer saveUnitById(Map<String, Object> map, Boolean isClas) {
+    Integer status = null;
+    if(isClas=true){
+      this.userMapper.updateStudent(map);
+      status = this.userMapper.updateTeacher(map);
+    }else{
+      status = this.userMapper.updateDept(map);
+    }
+    return status;
+  }
+  
+  public UserInfo searchById(Integer userId) {
+    
+    return userMapper.searchById(userId);
+  }
+
+
+
+  public int updateLoginMobile(Map<String, Object> map) {
+    
+    return userMapper.updateLoginMobile(map);
+  }
+
+  public int updateUserInfoMobile(Map<String, Object> map) {
+    
+    return userMapper.updateUserInfoMobile(map);
+  }
+
+  public Integer updateUserinfo(Map<String, Object> map) {
+   
+    return userMapper.updateUserInfoforImi(map);
+  }
+
+  public Integer updateImage(Map<String, Object> map) {
+    
+    return userMapper.updateImage(map);
+  }
+  
+  public boolean findById(Integer userId) {
+    int count = userMapper.findById(userId);
+    if(count==0){
+      return false;
+    }else{
+      return true;
+    }
+  }
+
+  public Integer saveUserDetail(SysUserInfo userinfo, SysUserLogin loginUser, Integer userId) {
+    Integer status = null;  
+    this.userMapper.updateUserInfo(userinfo);
+    status = this.userMapper.updateLogUser(loginUser);
+    return status;
+  }
+
+  public Integer auditUser(Map<String, Object> map) {
+    return this.userMapper.auditUser(map);
+  }
+}

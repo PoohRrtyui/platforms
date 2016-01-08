@@ -1,0 +1,66 @@
+<%--
+  Created by IntelliJ IDEA.
+  User: PoohD
+  Date: 2015/11/27
+  Time: 13:27
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+
+<%-- <spring:url value="/page/data" var="pageUrl" htmlEscape="true"/> --%>
+<html>
+<head>
+    <title>左侧菜单页面</title>
+    <script type="text/javascript" src="static/js/menu/userType.js"></script> 
+</head>
+<body>
+<%-- <spring:url value="/page/passwordmanage" var="pwdUrl" htmlEscape="true"/>
+
+<spring:url value="/departmentInfo/show" var="department" htmlEscape="true"/>
+
+<spring:url value="/appInfo/show" var="appInfo" htmlEscape="true"/>
+
+<spring:url value="/page/codemaster" var="codemasterUrl" htmlEscape="true"/>
+
+<spring:url value="/page/headImage" var="headImgUrl" htmlEscape="true"/>
+
+<spring:url value="/page/bureau" var="bureauUrl" htmlEscape="true"/> --%>
+<div class="main-sidebar">
+    <aside class="main-sidebar">
+        <section class="sidebar">
+            <form action="#" method="get" class="sidebar-form">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="搜索...">
+					<span class="input-group-btn">
+                		<button type="submit" name="search" id="search-btn" class="btn btn-flat">
+                		<i class="fa fa-search"></i>
+                		</button>
+              		</span>
+                </div>
+            </form>
+            <!-- /.search form -->
+            <!-- Sidebar Menu -->
+            <ul class="sidebar-menu">
+                <%-- <li class="header">栏目菜单</li>
+                <li class="treeview">
+                    <a href=""><i class="fa fa-link"></i> <span>机构管理</span>
+                    	<i class="fa fa-angle-left pull-right"></i>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li><a href="${bureauUrl}">单位管理</a></li>
+                    </ul></li>
+                  
+                <li class="treeview"><a href="${pwdUrl}"> <i class="fa fa-link"></i><span>修改密码</span></a></li>
+                <li class="treeview"><a href="${headImgUrl }"><i class="fa fa-link"></i> <span>头像上传</span></a></li>
+                <li class="treeview"><a href="${codemasterUrl}"><i class="fa fa-link"></i> <span>数据字典</span></a></li>
+                <li class="treeview"><a href="${department}"><i class="fa fa-link"></i> <span>部门管理</span></a></li> --%>
+                 <!-- 班级管理 -->
+               <%--  <li class="active">
+                 <a href="${classmanageUrl}"><i class="fa fa-link"></i><span>班级管理</span></a></li> --%>
+                 
+            </ul>
+        </section>
+    </aside>
+</div>
+

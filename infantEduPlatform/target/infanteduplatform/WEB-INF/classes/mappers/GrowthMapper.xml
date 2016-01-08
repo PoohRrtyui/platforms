@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.GrowthMapper">
+		<!-- 初始加载查询数据 -->
+	<select id="queryGrowthPage" parameterType="com.xunyun.infanteduplatform.domain.interaction.Bulletin"
+		resultType="com.xunyun.infanteduplatform.domain.SysUserInfo" >
+            SELECT 
+              ui.userid,ui.name,ui.photourl,fm.parentUserId 
+						FROM ib_UserInClass uc,ib_UserInOrg uo,ib_UserInfo ui,ib_FamilyMembers fm  where uc.userid=uo.userid and ui.userid=fm.studentuserid and userType=8
+						 and uo.userid=ui.userid and uc.classid=#{classId} and uc.organizationid=#{organizationId} and ui.deleteflg=0 
+	</select>
+	
+	<select id="queryParentUserId" parameterType="Integer" resultType="Integer" >
+		select ParentUserId from ib_FamilyMembers where studentuserid=#{userId}
+	</select>
+	
+	<select id="queryGrowthInfo" parameterType="java.util.Map" resultType="com.xunyun.infanteduplatform.domain.interaction.Growth" >
+		SELECT a.* from (
+             select content,createdBy,to_char(creationTime,'yyyy-mm-dd hh24:mi:ss') as creationTime from(
+
+(select bulletinContent content,name createdBy,b.creationTime creationTime from II_Bulletin b,ib_userinfo u where b.CreatedBy in (select CreatedBy from ib_UserInfo where userid in (6,62) and b.CreatedBy=u.createdby) union all
+
+(select discussionContent content,name createdBy,d.creationTime creationTime from II_Discussion d,ib_userinfo u where d.CreatedBy in (select CreatedBy from ib_UserInfo where userid in (6,62)) and d.CreatedBy=u.createdby) union all
+
+(select replayContent content,name createdBy,d.ReplayTime creationTime from II_DiscussionReplay d,ib_userinfo u where d.userid in (6,62) and d.userid=u.userid) union all
+
+(select replayContent content,name createdBy,r.replayTime creationTime from II_Replay r,ib_userinfo u where r.userid in (6,62) and r.userid=u.userid) union all
+
+(select content content,name createdBy,SendOutTime creationTime from II_Message m,ib_userinfo u where SendOutUserId in (6,62) and m.SendOutUserId=u.userid) union all
+
+(select DECODE(dynamicType,1,'通知公告',2,'任务',3,'动态',4,'健康关怀',5,'育儿助手',6,'消息',7,'互动',8,'成长档案') content,name createdBy,d.praiseTime creationTime from II_Dynamic d,ib_userinfo u where d.userid in (6,62) and d.userid=u.userid) union all
+
+(select DECODE（collectType,1,'通知公告',2,'任务',3,'动态',4,'健康关怀',5,'育儿助手',6,'消息',7,'互动',8,'成长档案'） content,name createdBy,c.collectTime creationTime from II_Collect c,ib_userinfo u where c.userid in (6,62) and c.userid=u.userid) union all
+
+(select DECODE(State,1,'正常',0,'不正常') content,name createdBy,m.CheckTime creationTime from II_MorningCheck m,ib_userinfo u where m.userid=62 and m.userid=u.userid)
+)) 
+	<where>
+		<if test="creationTime !=null">
+			<if test="direction == 1">
+				<![CDATA[ 
+	                 creationTime > to_date(#{creationTime},'yyyy-mm-dd hh24:mi:ss') 
+	           ]]>
+			</if>
+			<if test="direction == 0">
+				<![CDATA[ 
+	                 creationTime < to_date(#{creationTime},'yyyy-mm-dd hh24:mi:ss') 
+	           ]]>
+	        </if> 
+	    </if> 
+	   </where>
+  order by creationTime desc
+            <![CDATA[ ) a WHERE rownum <= #{count} ]]> 
+	</select>
+</mapper>

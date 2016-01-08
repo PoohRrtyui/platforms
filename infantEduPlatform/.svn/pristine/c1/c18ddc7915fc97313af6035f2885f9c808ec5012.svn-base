@@ -1,0 +1,509 @@
+package com.xunyun.infanteduplatform.controller.interaction.dynamic;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Blob;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.xunyun.infanteduplatform.domain.interaction.Bulletin;
+import com.xunyun.infanteduplatform.domain.interaction.ClassDynamicModel;
+import com.xunyun.infanteduplatform.domain.interaction.DynamicDetail;
+import com.xunyun.infanteduplatform.domain.interaction.Image;
+import com.xunyun.infanteduplatform.domain.interaction.Dynamic;
+import com.xunyun.infanteduplatform.domain.interaction.ImageModel;
+import com.xunyun.infanteduplatform.domain.interaction.ImageRelation;
+import com.xunyun.infanteduplatform.domain.interaction.Replay;
+import com.xunyun.infanteduplatform.domain.interaction.ReplayModel;
+import com.xunyun.infanteduplatform.domain.interaction.SelectDynamic;
+import com.xunyun.infanteduplatform.service.AppInfoService;
+import com.xunyun.infanteduplatform.service.BulletinService;
+import com.xunyun.infanteduplatform.service.DynamicService;
+import com.xunyun.infanteduplatform.service.ImageService;
+import com.xunyun.infanteduplatform.utils.DateUtils;
+import com.xunyun.infanteduplatform.utils.InteractionUtils;
+import com.xunyun.infanteduplatform.utils.ReadInputStreamUtils;
+
+@Controller
+@RequestMapping("dynamic")
+public class ClassDynamicController {
+
+  @Autowired
+  private BulletinService bulletinService;
+
+  @Autowired
+  private DynamicService dynamicService;
+  
+  @Autowired
+  private AppInfoService appInfoService;
+  
+  @Autowired
+  private ImageService imageService;
+
+  /**
+   * 查询班级动态列表
+   * 
+   * @param organizationId
+   * @param appCode
+   * @param classId
+   * @param pageIndex
+   * @param pageSize
+   * @return
+   * @throws ParseException
+   */
+  @ResponseBody
+  @RequestMapping("/queryMessageList")
+  public Map<String, Object> queryMessageList(Integer organizationid, String appcode,
+      Integer classid, @RequestParam(defaultValue = "1") Integer pageIndex, @RequestParam(
+          defaultValue = "10") Integer pageSize) throws ParseException {
+
+    HashMap<String, Object> map = new HashMap<String, Object>();
+
+    if (appcode == null || "".equals(appcode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码为空，查询失败!");
+      map.put("data", "");
+    } else if (organizationid == null) {
+      map.put("state", "error");
+      map.put("message", "机构代码为空，查询失败!");
+      map.put("data", "");
+    } else if (classid == null) {
+      map.put("state", "error");
+      map.put("message", "classId类型有误!");
+      map.put("data", "");
+    } else if (!appInfoService.findByAppCode(appcode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码未开启，查询失败!");
+      map.put("data", "");
+    } else {
+      // 开始条数
+      Integer startNumber = pageSize * (pageIndex - 1) - 1;// 起始条数
+      // 结束条数
+      Integer endNumber = pageIndex * pageSize;// 终止条数
+      // 总数目
+      int countNumber = 0;
+
+      Bulletin bulletin = new Bulletin();
+      bulletin.setClassId(classid);
+      bulletin.setOrganizationId(organizationid);
+      bulletin.setStartNumber(startNumber);
+      bulletin.setEndNumber(endNumber);
+      bulletin.setBulletinType(3);
+
+      List<SelectDynamic> listData = bulletinService.queryBulletinPage(bulletin);
+      List<ClassDynamicModel> cdmList = new ArrayList<ClassDynamicModel>();
+      
+      byte[] photo = null;
+      // 数据不为空，取总数
+      if (listData != null && listData.size() > 0) {
+        countNumber = listData.get(0).getDataCount();
+        
+        Integer bulletinId;
+        for(SelectDynamic sd: listData){
+          
+          bulletinId = sd.getBulletinId();
+          //列表Model类
+          ClassDynamicModel cdm = new ClassDynamicModel();
+          cdm.setBulletinContent(sd.getBulletincontent());//1
+          cdm.setBulletinId(bulletinId);//2
+          cdm.setCreationTime(sd.getStrcreationtime());//3
+          cdm.setName(sd.getName());//4
+          
+          String bulletinphotourl = sd.getPhotourl();
+          try {
+            photo = InteractionUtils.getPhoto(bulletinphotourl);
+            cdm.setPhoto(photo);//5
+          } catch (IOException e1) {
+            e1.printStackTrace();
+          } catch (SQLException e1) {
+            e1.printStackTrace();
+          }
+          // 点赞头像列表
+          Dynamic dynamic = new Dynamic();
+          dynamic.setModuleId(bulletinId);
+          dynamic.setDynamicType(3);
+          List<Dynamic> listDynamic = bulletinService.queryPhotoList(dynamic);
+          cdm.setPraiseCount(listDynamic.size());//6
+          List<byte[]> praisePhotoList = new ArrayList<byte[]>();
+          for(Dynamic d: listDynamic){
+            String photourl = d.getDynamicPhotoUrl();
+            try {
+              byte[] dynamicPhoto = InteractionUtils.getPhoto(photourl);
+              praisePhotoList.add(dynamicPhoto);
+            } catch (IOException e) {
+              e.printStackTrace();
+            } catch (SQLException e) {
+              e.printStackTrace();
+            }
+          }
+          cdm.setPraisePhotoList(praisePhotoList);//7
+          // 回复列表
+          Replay replay = new Replay();
+          replay.setModuleId(bulletinId);
+          List<Replay> listReplay = bulletinService.queryReplayList(replay);
+          cdm.setReplayCount(listReplay.size());//8
+          List<ReplayModel> listRM = new ArrayList<ReplayModel>();
+          for(Replay re: listReplay){
+            ReplayModel rModel = new ReplayModel();
+            rModel.setName(re.getName());
+            rModel.setReplayContent(re.getReplayContent());
+            rModel.setReplayTime(DateUtils.getTimeString(re.getReplayTime()));
+            listRM.add(rModel);
+          }
+          cdm.setReplayList(listRM);//9
+          cdmList.add(cdm);
+        }
+        
+      }
+      // 页数
+      int pageCount = (int) Math.ceil((double) countNumber / pageSize);
+
+      // 总条数
+      map.put("dataCount", countNumber);
+      map.put("pageCount", pageCount);
+      map.put("pageIndex", pageIndex);
+      map.put("pageSize", pageSize);
+      // 数据列表
+      map.put("data", cdmList);
+    }
+    return map;
+  }
+
+  /**
+   * 插入班级动态
+   * 
+   * @param organizationid
+   * @param appcode
+   * @param userid
+   * @param bulletincontent
+   * @param picturecontent
+   * @return
+   * @throws Exception 
+   */
+  @ResponseBody
+  @RequestMapping("/insertMessage")
+  public Map<String, Object> insertMessage(Integer organizationid, 
+      String appcode, Integer userid, Integer classid, String bulletincontent, 
+      List<Blob> pictureList) throws Exception {
+    
+    HashMap<String, Object> map = new HashMap<String, Object>();
+
+    if (appcode == null || "".equals(appcode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码为空，无权插入班级动态!");
+      map.put("data", "");
+    } else if (organizationid == null) {
+      map.put("state", "error");
+      map.put("message", "机构代码参数错误!");
+      map.put("data", "");
+    } else if ("".equals(bulletincontent) || bulletincontent == null) {
+      map.put("state", "error");
+      map.put("message", "动态内容参数错误!");
+      map.put("data", "");
+    } else if (userid == null) {
+      map.put("state", "error");
+      map.put("message", "用户id参数错误!");
+      map.put("data", "");
+    } else if (!appInfoService.findByAppCode(appcode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码未开启，无权插入班级动态!");
+      map.put("data", "");
+    } else {
+      Bulletin bulletin = new Bulletin();
+      bulletin.setOrganizationId(organizationid);
+      bulletin.setBulletinContent(bulletincontent);
+      bulletin.setCreatedBy(String.valueOf(userid));
+      bulletin.setCreationTime(new Date());
+      bulletin.setBulletinType(3);
+      bulletin.setClassId(classid);
+      bulletin.setTitle("");
+      bulletin.setLastUpdatedBy(String.valueOf(userid));
+      bulletin.setLastUpdateTime(new Date());
+      //插入班级动态
+      bulletinService.insertMessage(bulletin);
+      int bulletinId = bulletin.getBulletinId();
+      
+      for (Blob item : pictureList) {
+        // 声明对象
+        Image image = new Image();
+        // TODO :文件流获取
+        File file = InteractionUtils.blob2File(item);
+        // 图片名称
+        String fileName = file.getName();
+        // 名称（没有扩展名）
+        String name = fileName.substring(0, fileName.lastIndexOf('.'));
+        // 扩展名
+        String extension = fileName
+                .substring(fileName.lastIndexOf('.') + 1);
+        // 获取图片内容
+        /* image.setImageContent(item); */
+        // 机构Id
+        image.setOrganizationId(organizationid);
+        // 文件名称
+        image.setImageName(name);
+        // 大小
+        image.setImageSize(file.length());
+        // 扩展名
+        image.setExtension(extension);
+        // 创建人
+        image.setCreatedBy(userid.toString());
+        // 创建时间
+        image.setCreationTime(new Date());
+        // 最终修改人
+        image.setLastUpdatedBy(userid.toString());
+        // 最终修改时间
+        image.setLastUpdateTime(new Date());
+        // 添加图片表
+        imageService.addImageList(image);
+
+        // 返回添加图片的图片Id
+        Integer imageId = image.getImageId();
+        // 声明对象
+        ImageRelation imageRelation = new ImageRelation();
+        // 模块Id
+        imageRelation.setModuleId(bulletinId);
+        // 图片Id
+        imageRelation.setImageId(imageId);
+        // 机构Id
+        imageRelation.setOrganizationId(organizationid);
+        // 添加图片关联表
+        imageService.addImageRelation(imageRelation);
+    }
+      map.put("state", "success");
+      map.put("message", "插入数据成功!");
+      map.put("data", bulletinId);
+    }
+
+    return map;
+
+  }
+
+  /**
+   * 插入点赞信息
+   * @param appcode
+   * @param userid
+   * @param moduleid
+   * @return
+   */
+  @ResponseBody
+  @RequestMapping("/insertPraise")
+  public Map<String, Object> insertPraise(String appcode, Integer userid, Integer moduleid) {
+
+    HashMap<String, Object> map = new HashMap<String, Object>();
+
+    if (appcode == null || "".equals(appcode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码为空，无权插入点赞信息!");
+      map.put("data", "");
+    } else if (userid == null){
+      map.put("state", "error");
+      map.put("message", "用户id有误!");
+      map.put("data", "");
+    }else if(moduleid == null){
+      map.put("state", "error");
+      map.put("message", "模块id有误!");
+      map.put("data", "");
+    } else if (!appInfoService.findByAppCode(appcode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码未开启，无权插入点赞信息!");
+      map.put("data", "");
+    } else{
+      Dynamic dynamic = new Dynamic();
+      dynamic.setModuleId(moduleid);
+      dynamic.setUserId(userid);
+      dynamic.setDynamicType(3);
+      int count = dynamicService.queryDynamic(dynamic);
+      
+      if(count != 0){
+        map.put("state", "success");
+        map.put("message", "已点赞成功!");
+        map.put("data", "");
+      }else{
+        dynamic.setPraiseTime(new Date());
+        dynamic.setDynamicType(3);
+        bulletinService.insertDynamic(dynamic);
+        
+        map.put("state", "success");
+        map.put("message", "点赞成功!");
+        map.put("data", "");
+      }
+    }
+    return map;
+  }
+  
+  /**
+   * 插入回复信息
+   * @param appcode
+   * @param userid
+   * @param moduleid
+   * @param targetid
+   * @param content
+   * @return
+   */
+  @ResponseBody
+  @RequestMapping("/insertReply")
+  public Map<String, Object> insertReply(String appcode, Integer userid, Integer moduleid,
+      Integer targetid, String content) {
+
+    HashMap<String, Object> map = new HashMap<String, Object>();
+
+    if (appcode == null || "".equals(appcode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码为空，无权插入回复信息!");
+      map.put("data", "");
+    } else if (userid == null){
+      map.put("state", "error");
+      map.put("message", "用户id有误!");
+      map.put("data", "");
+    }else if(moduleid == null){
+      map.put("state", "error");
+      map.put("message", "模块id有误!");
+      map.put("data", "");
+    } else if(targetid == 0){
+      map.put("state", "error");
+      map.put("message", "回复对象id有误!");
+      map.put("data", "");
+    } else if ("".equals(content) || content == null) {
+      map.put("state", "error");
+      map.put("message", "内容为空，插入数据失败!");
+      map.put("data", "");
+    } else if (!appInfoService.findByAppCode(appcode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码未开启，无权插入回复信息!");
+      map.put("data", "");
+    } else {
+      Replay replay = new Replay();
+      replay.setModuleId(moduleid);
+      replay.setTargetId(targetid);
+      replay.setUserId(userid);
+      replay.setReplayContent(content);
+      replay.setReplayTime(new Date());
+      bulletinService.insertReplay(replay);
+      
+      map.put("state", "success");
+      map.put("message", "回复成功!");
+      map.put("data", replay);
+    }
+    return map;
+  }
+  
+  /**
+   * 查询班级动态详情
+   * @param appcode
+   * @param bulletinid
+   * @return
+   * @throws Exception 
+   */
+  @ResponseBody
+  @RequestMapping("/queryMessageDetail")
+  public Map<String, Object> queryMessageDetail(String appcode, Integer bulletinid) throws Exception {
+    
+    HashMap<String, Object> map = new HashMap<String, Object>();
+    
+    if (appcode == null || "".equals(appcode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码为空，无权查询动态详情!");
+      map.put("data", "");
+    } else if(bulletinid == null){
+      map.put("state", "error");
+      map.put("message", "通知公告id有误!");
+      map.put("data", "");
+    } else if (!appInfoService.findByAppCode(appcode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码未开启，无权查询动态详情!");
+      map.put("data", "");
+    } else{
+      //动态详情model类
+      DynamicDetail dd = new DynamicDetail();
+      
+      Bulletin bulletin = new Bulletin();
+      bulletin.setBulletinId(bulletinid);
+      bulletin.setBulletinType(3);
+      //班级动态详情
+      SelectDynamic sd = new SelectDynamic();
+      sd = bulletinService.queryDetail(bulletin);
+      
+      dd.setBulletinContent(sd.getBulletincontent());//1
+      dd.setCreationTime(sd.getStrcreationtime());//2
+      dd.setName(sd.getName());//3
+      //动态发布者头像
+      dd.setPhoto(InteractionUtils.getPhoto(sd.getPhotourl()));//4
+      //动态图片列表
+      List<Image> listImages = imageService.queryImageList(bulletinid);
+      List<ImageModel> list = new ArrayList<ImageModel>();
+      // 查询图片内容
+      for (Image image : listImages) {
+
+        if (image.getStrImageContent() != null) {
+          // 创建ImageModel类实例
+          ImageModel imageModel = new ImageModel();
+          // 创建InputStream类实例
+          InputStream inStream = new ByteArrayInputStream(image.getStrImageContent().getBytes());
+          // 读取输入流
+          byte data[] = ReadInputStreamUtils.readInputStream(inStream);
+          inStream.read(data);
+          // 关闭输入流
+          inStream.close();
+          // 获取图片内容
+          imageModel.setImageContent(data);
+          list.add(imageModel);
+        }
+      }
+      dd.setPictureList(list);//5
+      // 点赞头像列表
+      Dynamic dynamic = new Dynamic();
+      dynamic.setModuleId(bulletinid);
+      dynamic.setDynamicType(3);
+      List<Dynamic> listDynamic = bulletinService.queryPhotoList(dynamic);
+      dd.setPraiseCount(listDynamic.size());//6
+      List<byte[]> praisePhotoList = new ArrayList<byte[]>();
+      for(Dynamic d: listDynamic){
+        String photourl = d.getDynamicPhotoUrl();
+        try {
+          byte[] dynamicPhoto = InteractionUtils.getPhoto(photourl);
+          praisePhotoList.add(dynamicPhoto);
+        } catch (IOException e) {
+          e.printStackTrace();
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      }
+      dd.setPraisePhotoList(praisePhotoList);//7
+      // 回复列表
+      Replay replay = new Replay();
+      replay.setModuleId(bulletinid);
+      List<Replay> listReplay = bulletinService.queryReplayList(replay);
+      dd.setReplayCount(listReplay.size());//8
+      List<ReplayModel> listRM = new ArrayList<ReplayModel>();
+      for(Replay re: listReplay){
+        ReplayModel rModel = new ReplayModel();
+        rModel.setName(re.getName());
+        rModel.setReplayContent(re.getReplayContent());
+        rModel.setReplayTime(DateUtils.getTimeString(re.getReplayTime()));
+        listRM.add(rModel);
+      }
+      dd.setReplayList(listRM);//9
+      // 状态
+      map.put("state", "success");
+      // 提示信息
+      map.put("message", "");
+      // 返回数据
+      map.put("data", dd);
+    }
+    return map;
+  }
+
+}

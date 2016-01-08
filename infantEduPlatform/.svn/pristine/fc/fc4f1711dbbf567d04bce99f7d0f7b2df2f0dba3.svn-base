@@ -1,0 +1,19 @@
+package com.xunyun.infanteduplatform.service;
+
+import com.xunyun.infanteduplatform.domain.SysUserInDepartment;
+import com.xunyun.infanteduplatform.persistent.UserMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * 用户所在部门Service
+ * Created by Pooh on 2015/12/22.
+ */
+@Service("UserInDeptService")
+public class UserInDepartmentService {
+
+    @Autowired UserMapper userMapper;
+    public Integer saveUserInDept(SysUserInDepartment userInDepartment){
+        return userMapper.saveUDep(userInDepartment);
+    }
+}

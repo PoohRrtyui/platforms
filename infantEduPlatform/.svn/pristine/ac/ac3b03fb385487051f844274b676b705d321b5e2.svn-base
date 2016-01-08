@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.CollectMapper">
+	<!-- 收藏信息查重 -->
+	<select id="collectValidate" parameterType="com.xunyun.infanteduplatform.domain.interaction.Collect"
+		resultType="Integer">
+		<![CDATA[
+		select a.moduleId
+		from II_Collect a
+		where a.moduleId=#{moduleId jdbcType=INTEGER} 
+		and a.collectType=#{collectType jdbcType=INTEGER}
+		and a.userId=#{userId jdbcType=INTEGER}
+		]]> 
+	</select>
+	
+	<!-- 交流信息收藏 -->
+	<insert id="collectSubjects" parameterType="com.xunyun.infanteduplatform.domain.interaction.Collect">
+		<![CDATA[
+		insert into II_Collect (
+		collectId,
+		moduleId,
+		userId,
+		CollectType,
+		collectTime)
+		values(
+		SEQ_collect.nextval,
+		#{moduleId jdbcType=INTEGER},
+		#{userId jdbcType=INTEGER},
+		#{collectType jdbcType=INTEGER},
+		#{collectTime jdbcType=DATE}
+		)
+		]]> 
+	</insert>
+	
+	<!-- 我的社区（该用户收藏的信息） -->
+    <select id="myCollect" parameterType="com.xunyun.infanteduplatform.domain.interaction.Collect"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Discussion">
+		<![CDATA[
+			SELECT b.*FROM (
+			SELECT a.*
+			,rownum AS rownumber 
+			FROM (select 
+			c.collectId,
+			d.name as authorName,
+			e.discussionContent,
+			e.creationTime,
+			count(*) over() dataCount
+			from II_Collect c
+			left join IB_userInfo d ON c.userId=d.userId
+			left join II_Discussion e ON c.moduleId=e.discussionId
+			where
+			c.userId=#{userId jdbcType=INTEGER} 
+			and c.collectType=#{collectType jdbcType=INTEGER} 
+			ORDER BY DISCUSSIONID
+					) a WHERE rownum <= #{endNumber jdbcType=INTEGER} 	
+			) b	WHERE b.rownumber >= #{startNumber jdbcType=INTEGER} 
+
+		]]> 
+    </select>
+</mapper>

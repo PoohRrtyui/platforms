@@ -1,0 +1,261 @@
+package com.xunyun.infanteduplatform.service;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.sql.Blob;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.xunyun.infanteduplatform.domain.LoginUserInfo;
+import com.xunyun.infanteduplatform.domain.interaction.Dynamic;
+import com.xunyun.infanteduplatform.domain.interaction.Replay;
+import com.xunyun.infanteduplatform.domain.interaction.ReplayModel;
+import com.xunyun.infanteduplatform.domain.interaction.SelectDynamic;
+import com.xunyun.infanteduplatform.domain.interaction.Bulletin;
+import com.xunyun.infanteduplatform.domain.interaction.Image;
+import com.xunyun.infanteduplatform.domain.interaction.ImageRelation;
+import com.xunyun.infanteduplatform.persistent.AppInfoMapper;
+import com.xunyun.infanteduplatform.persistent.BulletinMapper;
+import com.xunyun.infanteduplatform.persistent.DynamicMapper;
+import com.xunyun.infanteduplatform.persistent.ImageMapper;
+import com.xunyun.infanteduplatform.persistent.ReplayMapper;
+
+@Service("bulletin")
+@Transactional
+public class BulletinService {
+
+  @Resource
+  private AppInfoMapper appInfoMapper;
+
+  @Resource
+  private BulletinMapper bulletinMapper;
+  
+  @Resource
+  private ReplayMapper replayMapper;
+  
+  @Resource 
+  private ImageMapper imageMapper;
+  
+  @Resource
+  private DynamicMapper dynamicMapper;
+
+  @Resource
+  private LoginUserService loginUserService;
+
+  // 查询班级动态列表
+  public List<SelectDynamic> queryBulletinPage(Bulletin bulletin) throws ParseException {
+
+    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+    String time;
+
+    List<SelectDynamic> dataList = bulletinMapper.queryBulletinPage(bulletin);
+
+    for (int i = 0; i < dataList.size(); i++) {
+      time = df.format(dataList.get(i).getCreationtime());
+      dataList.get(i).setStrcreationtime(time);
+    }
+    return dataList;
+  }
+
+  // 查询点赞头像列表
+  public List<Dynamic> queryPhotoList(Dynamic dynamic) {
+    return dynamicMapper.queryPhotoList(dynamic);
+  }
+
+  public List<ReplayModel> queryReplayList(Replay replay) {
+    
+    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+    String time;
+
+    List<ReplayModel> dataList = replayMapper.queryReplayList(replay);
+
+    for (int i = 0; i < dataList.size(); i++) {
+      time = df.format(dataList.get(i).getReplayTime());
+      dataList.get(i).setStrReplayTime(time);
+    }
+    
+    return dataList;
+  }
+
+  // 获取用户头像地址(项目)
+  public String getBlob(HttpServletRequest request, Integer userId) throws IOException {
+
+    LoginUserInfo userInfo = new LoginUserInfo();
+    userInfo.setUserid(userId);
+    userInfo = loginUserService.findLoginUserById(userInfo);
+
+    String scheme = request.getScheme();
+    String serverName = request.getServerName();
+    int serverPort = request.getServerPort();
+    String contextPath = request.getContextPath();
+    String resourcePath = "/static/images/";
+
+    // 初始加载路径
+    String loadPath =
+        scheme + "://" + serverName + ":" + serverPort + contextPath
+            + resourcePath.replaceAll("\\|", "/");
+    String str;
+
+    if (!"".equals(userInfo.getPhotourl()) && userInfo.getPhotourl() != null) {
+      // 文件夹存在时候的路径
+      String subPath = "/resources/uploadImages/userLogo/";
+      String existPath =
+          scheme + "://" + serverName + ":" + serverPort + contextPath + subPath
+              + userInfo.getPhotourl() + "/";
+      str = existPath + "180x180.jpg";
+    } else {
+      str = loadPath + "180x180.jpg";
+    }
+    return str;
+  }
+  
+  //根据photourl获取Blob
+  public Blob getPhoto(String photourl) throws SQLException, IOException{
+    
+    Blob blob = null;
+    File file = null;
+    @SuppressWarnings("unused")
+    int amount = 0; 
+    BufferedOutputStream out = null; 
+    //用户没有上传头像，用默认头像
+    if("".equals(photourl) || photourl == null){
+     file = new File("f:\\workspace1\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp3\\"
+         + "wtpwebapps\\infantEduPlatform\\static\\images\\180x180.jpg"); 
+    }else{
+      //TODO 这里是地址
+      file = new File("f:\\workspace1\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp3\\"
+          + "wtpwebapps\\infantEduPlatform\\resources\\uploadImages\\userLogo\\"
+          + photourl + "\\180x180.jpg");
+    }
+    try {
+      @SuppressWarnings("null")
+      InputStream inputStream = blob.getBinaryStream();// IO流
+      int bufferSize = ( (oracle.sql.BLOB) blob).getBufferSize();
+      out = new BufferedOutputStream(new FileOutputStream(file),(int) bufferSize);
+      byte[] b = new byte[ (int) bufferSize];
+      int count = inputStream.read(b, 0, (int) bufferSize);
+      while (count != -1) {
+        out.write(b, 0, count);
+        amount += count; 
+        count = inputStream.read(b, 0, (int) bufferSize); 
+      }
+      out.close(); 
+      out = null; 
+      inputStream.close(); 
+      inputStream = null; 
+    } catch (Exception e) {
+      System.out.println("error");
+    }
+    return blob;
+  }
+
+//  根据blob返回文件流
+  public File blob2File(Blob blob) throws Exception {
+    
+    File file = null;
+    OutputStream os = new FileOutputStream(file);
+    byte[] buffer = new byte[8192000];
+    int bytesRead = 0;
+    InputStream inputStream;
+    try {
+        inputStream = blob.getBinaryStream();
+        while ((bytesRead = inputStream.read(buffer, 0, 8192)) != -1) {
+          os.write(buffer, 0, bytesRead);
+          }
+        os.close();
+        inputStream.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+        throw new Exception("fault");
+    }
+
+    return file;
+  }
+  
+  //文件流转成byte流
+  @SuppressWarnings("resource")
+  public byte[] file2Byte(File file) throws Exception{
+    
+    byte[] data = new byte[8192000];  
+    
+    try {
+      InputStream ins = new FileInputStream(file);
+      ins.read(data);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new Exception("fault");
+    }
+    
+    return data;  
+  }
+
+  public int insertMessage(Bulletin bulletin) {
+
+    return bulletinMapper.insertMessage(bulletin);
+  }
+
+  public int queryDynamic(Dynamic dynamic) {
+    return dynamicMapper.queryDynamic(dynamic);
+  }
+
+  public int insertDynamic(Dynamic dynamic) {
+    return dynamicMapper.insertDynamic(dynamic);
+  }
+
+  public int insertReplay(Replay replay) {
+    return replayMapper.insertReplay(replay);
+  }
+
+  public SelectDynamic queryDetail(Bulletin bulletin) {
+    
+    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+    SelectDynamic data = bulletinMapper.queryDetail(bulletin);
+    data.setStrcreationtime(df.format(data.getCreationtime()));
+    
+    return data;
+  }
+
+  // 公告列表获取
+  public List<Bulletin> queryBulletinList(Bulletin sysBulletin) {
+    return this.bulletinMapper.queryBulletinList(sysBulletin);
+  }
+
+  // 公告信息查询
+  public Bulletin queryByBulletinId(Integer bulletinId) {
+    return this.bulletinMapper.queryByBulletinId(bulletinId);
+  }
+
+  // 图片信息查询
+  public List<Image> queryImageList(Integer bulletinId) {
+    return this.imageMapper.queryImageList(bulletinId);
+  }
+
+  // 公告信息保存
+  public Integer addBulletinInfo(Bulletin sysBulletin) {
+    return this.bulletinMapper.addBulletinInfo(sysBulletin);
+  }
+
+  // 图片信息保存
+  public Integer addImageList(Image image) {
+    return this.imageMapper.addImageList(image);
+  }
+  
+  //图片关联表保存
+  public Integer addImageRelation(ImageRelation imageRelation){
+    return this.imageMapper.addImageRelation(imageRelation);
+  }
+
+}

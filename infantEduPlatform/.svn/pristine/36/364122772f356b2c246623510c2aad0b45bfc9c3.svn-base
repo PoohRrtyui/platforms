@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        	http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd
+        	       	http://www.springframework.org/schema/context   		http://www.springframework.org/schema/context/spring-context-4.0.xsd
+    		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd    	">
+
+	<bean id="jdbcDataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName">
+			<value>oracle.jdbc.driver.OracleDriver</value>
+		</property>
+		<property name="url">
+			<value>jdbc:oracle:thin:@192.168.1.120:1521:infantedubase</value>
+		</property>
+		<property name="username">
+			<value>infantedubase</value>
+		</property>
+		<property name="password">
+			<value>infantedubase</value>
+		</property>
+	</bean>
+
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="jdbcDataSource" />
+
+		
+		<property name="mapperLocations" value="classpath:mappers/*Mapper.xml" /> <!-- Mapper xml 的位置 我用了通配符 -->
+		<!--<property name="typeAliasesPackage" value="com.xunyun.infanteduplatform.domain" /> --><!-- Mapper xml 的entity包名、这样在mapper.xml里面可以不用写全类名 -->
+	</bean>
+	<!-- 自动注册接口Bean -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.xunyun.infanteduplatform.persistent" /> <!-- Mapper Java 接口类的包 -->
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />  <!-- sqlsessionfactory名称 注意是名称 不是bean -->
+	</bean>
+
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory"></constructor-arg>
+	</bean>
+	
+	<!-- message 解析器-->
+	<bean id="messageSource"
+		class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+				<value>classpath:messages</value>
+				<!--<value>classpath:logs</value>-->
+			</list>
+		</property>
+		<property name="defaultEncoding" value="UTF-8" />
+		<property name="cacheSeconds" value="60" />
+		<property name="useCodeAsDefaultMessage" value="true" />
+	</bean>
+
+<!--
+	<bean class="org.common.framework.utils.message.CommonMessage">
+		<property name="messageSource" ref="messageSource" />
+		
+	</bean>
+-->
+	<!-- 事物拦截配置开始 -->
+	<!-- <tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			以下方法必须在事务内，如果外层已有事务，则使用外层事务，如果没有事务则创建 遇到异常回滚操作
+			<tx:method name="create*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="save*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="update*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="delete*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="remove*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="modify*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="import*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="verify*" propagation="REQUIRED" />
+			query开头的service层方法支持事务，不是必须在事务内，只读
+			<tx:method name="query*" propagation="SUPPORTS" read-only="true" />
+			以tx开头的service层方法必须在开启一个新的事物
+			<tx:method name="tx*" propagation="REQUIRES_NEW" />
+			其余方法支持事务，但不必须在事务内，只读
+			<tx:method name="*" propagation="SUPPORTS" read-only="true" />
+		</tx:attributes>
+	</tx:advice> -->
+
+
+	<!-- <aop:config proxy-target-class="true"> <aop:pointcut expression="execution(* 
+		com.xunyun.infantEduPlatform.service..*(..))" id="interceptorPointCuts" /> 
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="interceptorPointCuts" /> 
+		</aop:config> -->
+
+	<!-- 配置MultipartResolver -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="UTF-8"></property>
+		<property name="maxUploadSize" value="4096000"></property>
+	</bean>
+
+</beans>

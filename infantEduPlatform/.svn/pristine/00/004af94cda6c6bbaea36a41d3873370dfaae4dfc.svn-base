@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.BulletinMapper">
+	 <resultMap type="com.xunyun.infanteduplatform.domain.interaction.SelectDynamic" id="SelectDynamicResultMap">
+        <result column="BULLETINID" property="BulletinId" jdbcType="INTEGER"/>
+        <result column="BULLETINCONTENT" property="bulletincontent" jdbcType="VARCHAR"/>
+        <result column="creationtime" property="creationtime" jdbcType="DATE"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="PHOTOURL" property="photourl" jdbcType="VARCHAR"/>
+        <result column="DATACOUNT" property="dataCount" jdbcType="INTEGER"/>
+        <result column="ROWNUMBER" property="rownumber" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!-- 查询公告列表 -->
+    <select id="queryBulletinList"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Bulletin"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Bulletin">
+		<![CDATA[
+			SELECT  b.*  FROM (
+				SELECT 
+					a.*, 
+					rownum	AS	rownumber	
+					FROM(
+						SELECT	
+							c.bulletinId,
+							c.title,
+							c.bulletinContent,
+							u.name as createdBy,
+							c.creationTime,	
+							COUNT(*) OVER () dataCount
+					    FROM II_Bulletin c
+							LEFT JOIN IB_UserInfo u ON c.createdBy= u.userId
+							WHERE c.organizationId =#{organizationId} 	   
+							AND c.bulletinType = 1 
+							AND c.classId = #{classId}
+   							AND c.deleteFlg = 0 
+   							ORDER BY c.creationTime desc
+						) a WHERE rownum <= #{endNumber jdbcType=INTEGER}
+				) b WHERE b.rownumber >= #{startNumber jdbcType=INTEGER}
+		]]>
+	</select>
+	
+	<!-- 公告信息获取 -->
+	<select id="queryByBulletinId"
+		parameterType="Integer"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Bulletin">
+		<![CDATA[
+			SELECT
+				a.bulletinId, 
+				a.title,
+				a.bulletinContent,
+				a.classId,
+				a.creationTime,
+				u.name as createdBy
+				FROM II_Bulletin a
+				LEFT JOIN IB_UserInfo u ON a.createdBy= u.userId
+				WHERE a.bulletinId =#{bulletinId} 
+		]]>
+	</select>
+	
+	<!-- 公告信息保存 -->
+	<insert id="addBulletinInfo" useGeneratedKeys="true"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Bulletin">
+		<selectKey resultType="Integer" order="BEFORE" keyProperty="bulletinId">
+			select SEQ_II_BULLETIN.nextval from dual
+		</selectKey>
+		INSERT INTO II_Bulletin a(
+		a.bulletinId,
+		a.organizationId,
+		a.title,
+		a.bulletinContent,
+		a.creationTime,
+		a.createdBy,
+		a.lastUpdateTime,
+		a.lastUpdatedBy,
+		a.bulletinType,
+		a.bulletinLevel,
+		a.classId,
+		a.sources,
+		a.deleteFlg
+		)VALUES(#{bulletinId},
+		#{organizationId jdbcType=INTEGER},
+		#{title jdbcType=VARCHAR},
+		#{bulletinContent jdbcType=VARCHAR},
+		#{creationTime},
+		#{createdBy},
+		#{lastUpdateTime},
+		#{lastUpdatedBy},
+		#{bulletinType},
+		#{bulletinLevel},
+		#{classId},
+		#{sources},
+		0)
+	</insert>
+	
+	<!--插入班级动态-->
+	<insert id="insertMessage" parameterType="com.xunyun.infanteduplatform.domain.interaction.Bulletin">
+		<selectKey resultType="INTEGER" order="BEFORE" keyProperty="bulletinId">  
+		   SELECT SEQ_II_BULLETIN.nextval as bid from DUAL
+	   </selectKey> 
+		
+		INSERT INTO II_BULLETIN(BULLETINID, ORGANIZATIONID, CLASSID, BULLETINCONTENT, CREATEDBY, 
+		CREATIONTIME, BULLETINTYPE, TITLE, LASTUPDATEDBY, LASTUPDATETIME) 
+		VALUES(SEQ_II_BULLETIN.CURRVAL, #{organizationId}, #{classId}, #{bulletinContent},
+		#{createdBy}, #{creationTime}, #{bulletinType}, #{title}, #{lastUpdatedBy}, #{lastUpdateTime})
+	</insert>
+	
+	<!-- 初始加载查询数据 -->
+	<select id="queryBulletinPage" parameterType="com.xunyun.infanteduplatform.domain.interaction.Bulletin"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.SelectDynamic" >
+		<![CDATA[
+				SELECT b.* FROM (
+					SELECT a.*, rownum AS rownumber
+					FROM (
+						SELECT 
+							c.BulletinId,
+							c.bulletincontent,
+							c.creationtime,
+							c.title,
+							ui.name,
+							ui.photourl,
+							COUNT(*) OVER () dataCount 
+						FROM II_BULLETIN c 
+						LEFT JOIN IB_USERINFO ui
+							on ui.userid = c.createdBy
+							where c.organizationId = #{organizationId}
+							and c.classId = #{classId}
+							and c.deleteflg = 0
+							and c.bulletintype = #{bulletinType }
+						ORDER BY c.BulletinId
+						) a WHERE rownum <= #{endNumber jdbcType=INTEGER} 	
+				) b	WHERE b.rownumber >= #{startNumber jdbcType=INTEGER} 
+			]]>
+		</select>
+		
+		<!-- 查询通知公告详情 -->
+		<select id="queryDetail" parameterType="com.xunyun.infanteduplatform.domain.interaction.Bulletin" 
+			 resultMap="SelectDynamicResultMap">
+			<![CDATA[
+				select b.bulletinContent,
+					b.creationTime,
+					b.createdBy,
+					ui.name,
+					ui.photourl
+				from II_BULLETIN b
+				left join IB_USERINFO ui
+				on ui.userid = b.createdBy
+				where
+				b.bulletinId = #{bulletinId }
+				and b.bulletinType = #{bulletinType }
+			]]>
+		</select>
+
+</mapper>

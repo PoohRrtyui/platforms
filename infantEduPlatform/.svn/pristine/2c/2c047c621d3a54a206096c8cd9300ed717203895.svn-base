@@ -1,0 +1,47 @@
+package com.xunyun.infanteduplatform.persistent;
+
+import java.util.List;
+import java.util.Map;
+
+import com.xunyun.infanteduplatform.domain.AppInfo;
+import com.xunyun.infanteduplatform.domain.SysBulletin;
+import com.xunyun.infanteduplatform.domain.SysImage;
+import com.xunyun.infanteduplatform.domain.SysImageRelation;
+import com.xunyun.infanteduplatform.domain.SysUserInfo;
+import com.xunyun.infanteduplatform.domain.interaction.Dynamic;
+import com.xunyun.infanteduplatform.domain.interaction.Replay;
+import com.xunyun.infanteduplatform.domain.interaction.SelectDynamic;
+
+public interface BulletinMapper {
+
+  AppInfo findById(int id);
+
+  int addAppInfo(AppInfo appInfo);
+
+  List<AppInfo> findAll();
+
+  //班级动态列表
+  List<SelectDynamic> queryBulletinPage(SysBulletin bulletin);
+
+  int deleteAppInfo(int id);
+
+  int updateAppInfo(AppInfo appInfo);
+
+  int updateList(Map<String, Object> map);
+
+  int closeList(Map<String, Object> map);
+
+  int deleteList(Map<String, Object> map);
+
+  int updateValidate(AppInfo appInfo);
+
+  //点赞者头像列表
+  List<SysUserInfo> queryPhotoList(Dynamic dynamic);
+
+  //每条班级动态图片列表
+  List<SysImage> queryPictureList(SysImageRelation ir);
+
+  //回复列表
+  List<Replay> queryReplayList(Replay replay);
+  
+}

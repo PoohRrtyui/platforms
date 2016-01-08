@@ -1,0 +1,420 @@
+package com.xunyun.infanteduplatform.controller.interaction.Exchange;
+
+import java.io.IOException;
+import java.sql.Blob;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.xunyun.infanteduplatform.utils.DateUtils;
+import com.xunyun.infanteduplatform.domain.SysCodeMaster;
+import com.xunyun.infanteduplatform.domain.interaction.Collect;
+import com.xunyun.infanteduplatform.domain.interaction.Discussion;
+import com.xunyun.infanteduplatform.domain.interaction.DiscussionReplay;
+import com.xunyun.infanteduplatform.domain.interaction.DiscussionReplayModel;
+import com.xunyun.infanteduplatform.domain.interaction.DiscussionView;
+import com.xunyun.infanteduplatform.domain.interaction.Dynamic;
+import com.xunyun.infanteduplatform.domain.interaction.DiscussionModel;
+import com.xunyun.infanteduplatform.domain.interaction.DynamicModel;
+import com.xunyun.infanteduplatform.domain.interaction.SysCodeMasterModel;
+import com.xunyun.infanteduplatform.service.AppInfoService;
+import com.xunyun.infanteduplatform.service.BulletinService;
+import com.xunyun.infanteduplatform.service.CodeMasterService;
+import com.xunyun.infanteduplatform.service.DiscussionInfoService;
+
+@Controller
+@RequestMapping("DiscussionInfo")
+public class DiscussionInfo {
+	@Resource
+	private CodeMasterService codeMasterService;
+	@Resource
+	private AppInfoService appInfoService;
+	@Resource
+	private DiscussionInfoService discussionInfoService;
+	@Resource
+	private BulletinService bulletinService;
+
+	// 专题分类信息获取
+	@RequestMapping(value = "/subjectList")
+	@ResponseBody
+	public Map<String, Object> subjectList(String appCode) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		try{
+			if (appCode == null || "".equals(appCode)) {
+				map.put("state", "error");
+				map.put("message", "应用状态为空，获取信息失败");
+				map.put("data", "");
+			} else if (!appInfoService.findByAppCode(appCode)) {
+				map.put("state", "error");
+				map.put("message", "应用状态为非开启状态，无权获取用户信息");
+				map.put("data", "");
+			} else {
+				// 声明对象
+				SysCodeMaster sysCodeMaster = new SysCodeMaster();
+				String largeCategoryCd = "LocationCode";
+				sysCodeMaster.setLargeCategoryCd(largeCategoryCd);
+				List<SysCodeMaster> subject = codeMasterService
+						.findMessage(sysCodeMaster);
+				List<SysCodeMasterModel> dataList = new ArrayList<SysCodeMasterModel>();
+				for (SysCodeMaster disc : subject) {
+					SysCodeMasterModel sysCodeMasterModel=new SysCodeMasterModel();
+					sysCodeMasterModel.setSmallCategoryCd(disc.getSmallCategoryCd());
+					sysCodeMasterModel.setSmallCategoryName(disc.getSmallCategoryName());
+					dataList.add(sysCodeMasterModel);
+				}
+				// 返回数据
+				map.put("state", "success");
+				map.put("message", "");
+				map.put("data", dataList);
+			}
+		}catch(Exception e){
+			map.put("state", "error");
+			map.put("message", "系统预期外错误！");
+			map.put("data", "");
+		}
+		
+		return map;
+	}
+
+	// 交流列表获取
+	@RequestMapping(value = "/discussionList")
+	@ResponseBody
+	public Map<String, Object> discussionList(HttpServletRequest request,
+			@RequestParam(defaultValue = "10") Integer pageSize,
+			@RequestParam(defaultValue = "1") Integer pageIndex,
+			String appCode,
+			Integer organizationId,
+			String subject) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		try {
+			if (appCode == null || "".equals(appCode)) {
+				map.put("state", "error");
+				map.put("message", "应用状态为空，获取信息失败");
+				map.put("data", "");
+			} else if (organizationId == null) {
+				map.put("state", "error");
+				map.put("message", "机构信息为空");
+				map.put("data", "");
+			} else if (subject == null) {
+				map.put("state", "error");
+				map.put("message", "专题信息为空");
+				map.put("data", "");
+			} else if (!appInfoService.findByAppCode(appCode)) {
+				map.put("state", "error");
+				map.put("message", "应用状态为非开启状态，无权获取用户信息");
+				map.put("data", "");
+			} else {
+				List<DiscussionModel> dataList = new ArrayList<DiscussionModel>();
+				List<DynamicModel> dyaList = new ArrayList<DynamicModel>();
+				int startNumber = pageSize * (pageIndex - 1) + 1;
+				int endNumber = pageSize * pageIndex;
+				int dataCount = 0;
+				Discussion discussion = new Discussion();
+				discussion.setOrganizationId(organizationId);
+				discussion.setSubject(subject);
+				discussion.setStartNumber(startNumber);
+				discussion.setEndNumber(endNumber);
+				// 获取数据
+				List<Discussion> listData = discussionInfoService
+						.queryDiscussionInfo(discussion);
+				// 数据不为空，取总数
+				if (listData != null && listData.size() > 0) {
+					dataCount = listData.get(0).getDataCount();
+					for (Discussion disc : listData) {
+						// 获取交流信息用户头像进行转换
+						String photourl = disc.getAuthorPhotoUrl();
+						Blob authorphotoUrl = bulletinService.getPhoto(request,
+								photourl);
+						// 将对象disc里面的数据存到edata里面
+						DiscussionModel edata = new DiscussionModel();
+						edata.setDiscussionContent(disc.getDiscussionContent());
+						edata.setCreatedBy(disc.getCreatedBy());
+						edata.setAuthorPhotoUrl(authorphotoUrl);
+						edata.setReplyCount(disc.getReplyCount());
+						edata.setDynamicCount(disc.getDynamicCount());
+						edata.setDataCount(disc.getDataCount());
+						Date time = disc.getCreationTime();
+						String creationTime = DateUtils.getTimeString(time);
+						edata.setCreationTime(creationTime);
+
+						// 定义模块id，值为查出来的交流id
+						Integer moduleId = disc.getDiscussionId();
+						Dynamic dynamic = new Dynamic();
+						dynamic.setModuleId(moduleId);
+						List<Dynamic> dynamicList = discussionInfoService
+								.queryDynamicInfo(dynamic);
+						for (Dynamic dya : dynamicList) {
+							// 获取用户头像
+							String dynPhotour = dya.getDynamicPhotoUrl();
+							Blob dynamicPhotoUrl = bulletinService.getPhoto(
+									request, dynPhotour);
+
+							DynamicModel fdata = new DynamicModel();
+							fdata.setUserId(dya.getUserId());
+							fdata.setDynamicPhotoUrl(dynamicPhotoUrl);
+							dyaList.add(fdata);
+						}
+						edata.setDynamicModelList(dyaList);
+						dataList.add(edata);
+					}
+				}
+				int pageCount = (int) Math.ceil((double) dataCount / pageSize);
+				map.put("state", "success");
+				map.put("message", "");
+				map.put("dataCount", dataCount);
+				map.put("pageCount", pageCount);
+				map.put("pageSize", pageSize);
+				map.put("pageIndex", pageIndex);
+				map.put("data", dataList);
+			}
+		} catch (IOException e) {
+			map.put("state", "error");
+			map.put("message", "系统预期外错误！");
+			map.put("data", "");
+		}
+
+		return map;
+	}
+
+	// 交流信息收藏
+	@RequestMapping(value = "/collectSubjects")
+	@ResponseBody
+	public Map<String, Object> collectSubjects(String appCode, Integer userId,
+			Integer moduleId) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		try {
+			if (appCode == null || "".equals(appCode)) {
+				map.put("state", "error");
+				map.put("message", "应用状态为空，获取信息失败");
+				map.put("data", "");
+			} else if (userId == null) {
+				map.put("state", "error");
+				map.put("message", "用户信息为空");
+				map.put("data", "");
+			} else if (moduleId == null) {
+				map.put("state", "error");
+				map.put("message", "模块信息为空");
+				map.put("data", "");
+			} else if (!appInfoService.findByAppCode(appCode)) {
+				map.put("state", "error");
+				map.put("message", "应用状态为非开启状态，无权获取用户信息");
+				map.put("data", "");
+			} else {
+				// 定义对象
+				Collect collect = new Collect();
+				// 当前时间
+				Date nowDate = Calendar.getInstance().getTime();
+				Integer collectType = 7;
+				collect.setCollectTime(nowDate);
+				collect.setUserId(userId);
+				collect.setModuleId(moduleId);
+				collect.setCollectType(collectType);
+				Integer collectCounts = discussionInfoService
+						.collectValidate(collect);
+				if (collectCounts == null) {
+					discussionInfoService.collectSubjects(collect);
+					map.put("state", "success");
+					map.put("message", "收藏成功");
+					map.put("data", "");
+				} else {
+					map.put("state", "success");
+					map.put("message", "收藏成功");
+					map.put("data", "");
+				}
+			}
+		} catch (Exception e) {
+			map.put("state", "error");
+			map.put("message", "系统预期外错误！");
+			map.put("data", "");
+		}
+
+		return map;
+	}
+
+	/* 交流信息保存 */
+	@RequestMapping(value = "/publishMessage")
+	@ResponseBody
+	public Map<String, Object> publishMessage(String appCode,
+			Integer organizationId, String subject, String discussionContent,
+			String createdBy) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		try {
+			if (appCode == null || "".equals(appCode)) {
+				map.put("state", "error");
+				map.put("message", "应用状态为空，获取信息失败");
+				map.put("data", "");
+			} else if (organizationId == null) {
+				map.put("state", "error");
+				map.put("message", "机构代码为空");
+				map.put("data", "");
+			} else if (subject == null) {
+				map.put("state", "error");
+				map.put("message", "专题信息为空");
+				map.put("data", "");
+			} else if (discussionContent == null) {
+				map.put("state", "error");
+				map.put("message", "发表内容为空");
+				map.put("data", "");
+			} else if (createdBy == null) {
+				map.put("state", "error");
+				map.put("message", "创建者为空");
+				map.put("data", "");
+			} else if (!appInfoService.findByAppCode(appCode)) {
+				map.put("state", "error");
+				map.put("message", "应用状态为非开启状态，无权获取用户信息");
+				map.put("data", "");
+			} else {
+				Discussion discussion = new Discussion();
+				// 当前时间
+				Date nowDate = Calendar.getInstance().getTime();
+				discussion.setCreationTime(nowDate);
+				discussion.setLastUpdateTime(nowDate);
+				discussion.setCreatedBy(createdBy);
+				discussion.setLastUpdatedBy(createdBy);
+				discussion.setOrganizationId(organizationId);
+				discussion.setSubject(subject);
+				discussion.setDiscussionContent(discussionContent);
+				discussionInfoService.publishMessage(discussion);
+				map.put("state", "success");
+				map.put("message", "发表成功");
+				map.put("data", "");
+			}
+		} catch (Exception e) {
+			map.put("state", "error");
+			map.put("message", "系统预期外错误！");
+			map.put("data", "");
+		}
+
+		return map;
+	}
+
+	// 我的社区（该用户发表的交流信息）
+	@RequestMapping(value = "/mypublishCollect")
+	@ResponseBody
+	public Map<String, Object> mypublishCollect(
+			@RequestParam(defaultValue = "10") Integer pageSize,
+			@RequestParam(defaultValue = "1") Integer pageIndex,
+			String appCode, 
+			String createdBy) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		if (appCode == null || "".equals(appCode)) {
+			map.put("state", "error");
+			map.put("message", "应用状态为空，获取信息失败");
+			map.put("data", "");
+		} else if (createdBy == null) {
+			map.put("state", "error");
+			map.put("message", "作者为空");
+			map.put("data", "");
+		} else if (!appInfoService.findByAppCode(appCode)) {
+			map.put("state", "error");
+			map.put("message", "应用状态为非开启状态，无权获取用户信息");
+			map.put("data", "");
+		} else{
+			List<DiscussionView> dataList = new ArrayList<DiscussionView>();
+			int startNumber = pageSize * (pageIndex - 1) + 1;
+			int endNumber = pageSize * pageIndex;
+			int dataCount = 0;
+			Discussion discussion = new Discussion();
+			discussion.setStartNumber(startNumber);
+			discussion.setEndNumber(endNumber);
+			discussion.setCreatedBy(createdBy);
+			// 获取数据
+			List<Discussion> listData = discussionInfoService
+					.mypublishCollect(discussion);
+			// 数据不为空，取总数
+			if (listData != null && listData.size() > 0) {
+				dataCount = listData.get(0).getDataCount();
+			}
+			for (Discussion disc : listData){
+				// 将对象disc里面的数据存到edata里面
+				DiscussionView edata = new DiscussionView();
+				edata.setAuthorName(disc.getAuthorName());
+				edata.setDataCount(disc.getDataCount());
+				edata.setDiscussionContent(disc.getDiscussionContent());
+				String creationTime = DateUtils.getTimeString(disc.getCreationTime());
+				edata.setCreationTime(creationTime);
+				dataList.add(edata);
+			}
+			int pageCount = (int) Math.ceil((double) dataCount / pageSize);
+			map.put("state", "success");
+			map.put("message", "");
+			map.put("dataCount", dataCount);
+			map.put("pageCount", pageCount);
+			map.put("pageSize", pageSize);
+			map.put("pageIndex", pageIndex);
+			map.put("data", dataList);
+		}
+		return map;
+	}
+	
+	// 我的社区（该用户评论的信息)
+		@RequestMapping(value = "/myCommentCollect")
+		@ResponseBody
+		public Map<String, Object> myCommentCollect(
+				@RequestParam(defaultValue = "10") Integer pageSize,
+				@RequestParam(defaultValue = "1") Integer pageIndex,
+				String appCode, 
+				Integer userId) {
+			Map<String, Object> map = new HashMap<String, Object>();
+			if (appCode == null || "".equals(appCode)) {
+				map.put("state", "error");
+				map.put("message", "应用状态为空，获取信息失败");
+				map.put("data", "");
+			} else if (userId == null) {
+				map.put("state", "error");
+				map.put("message", "用户信息为空");
+				map.put("data", "");
+			} else if (!appInfoService.findByAppCode(appCode)) {
+				map.put("state", "error");
+				map.put("message", "应用状态为非开启状态，无权获取用户信息");
+				map.put("data", "");
+			} else{
+				List<DiscussionReplayModel> dataList = new ArrayList<DiscussionReplayModel>();
+				int startNumber = pageSize * (pageIndex - 1) + 1;
+				int endNumber = pageSize * pageIndex;
+				int dataCount = 0;
+				DiscussionReplay discussionReplay = new DiscussionReplay();
+				discussionReplay.setStartNumber(startNumber);
+				discussionReplay.setEndNumber(endNumber);
+				discussionReplay.setUserId(userId);
+				// 获取数据
+				List<DiscussionReplay> listData = discussionInfoService
+						.myCommentCollect(discussionReplay);
+				// 数据不为空，取总数
+				if (listData != null && listData.size() > 0) {
+					dataCount = listData.get(0).getDataCount();
+				}
+				for (DiscussionReplay disc : listData){
+					// 将对象disc里面的数据存到edata里面
+					DiscussionReplayModel edata = new DiscussionReplayModel();
+					edata.setUserId(disc.getUserId());
+					edata.setDataCount(dataCount);
+					edata.setReplayContent(disc.getReplayContent());
+					edata.setReplyName(disc.getReplyName());
+					String replayTime = DateUtils.getTimeString(disc.getReplayTime());
+					edata.setReplayTime(replayTime);
+					dataList.add(edata);
+				}
+				int pageCount = (int) Math.ceil((double) dataCount / pageSize);
+				map.put("state", "success");
+				map.put("message", "");
+				map.put("dataCount", dataCount);
+				map.put("pageCount", pageCount);
+				map.put("pageSize", pageSize);
+				map.put("pageIndex", pageIndex);
+				map.put("data", dataList);
+			}
+			return map;
+		}
+}

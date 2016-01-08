@@ -1,0 +1,225 @@
+package com.xunyun.infanteduplatform.service;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.sql.Blob;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.xunyun.infanteduplatform.domain.AppInfo;
+import com.xunyun.infanteduplatform.domain.LoginUserInfo;
+import com.xunyun.infanteduplatform.domain.SysUserInfo;
+import com.xunyun.infanteduplatform.domain.interaction.Dynamic;
+import com.xunyun.infanteduplatform.domain.interaction.Replay;
+import com.xunyun.infanteduplatform.domain.interaction.SelectDynamic;
+import com.xunyun.infanteduplatform.domain.interaction.SysBulletin;
+import com.xunyun.infanteduplatform.domain.interaction.SysImage;
+import com.xunyun.infanteduplatform.domain.interaction.SysImageRelation;
+import com.xunyun.infanteduplatform.persistent.AppInfoMapper;
+import com.xunyun.infanteduplatform.persistent.BulletinMapper;
+
+@Service("bulletin")
+@Transactional
+public class BulletinService {
+
+  @Resource
+  private AppInfoMapper appInfoMapper;
+
+  @Resource
+  private BulletinMapper bulletinMapper;
+
+  @Resource
+  private LoginUserService loginUserService;
+
+  public AppInfoMapper getAppInfoMapper() {
+    return appInfoMapper;
+  }
+
+  public void setAppInfoMapper(AppInfoMapper appInfoMapper) {
+    this.appInfoMapper = appInfoMapper;
+  }
+
+  public AppInfo findById(int id) {
+
+    return appInfoMapper.findById(id);
+  }
+
+  public int addAppInfo(AppInfo appInfo) {
+
+    return appInfoMapper.addAppInfo(appInfo);
+  }
+
+  public List<AppInfo> findAll() {
+
+    return appInfoMapper.findAll();
+  }
+
+  // 查询班级动态列表
+  public List<SelectDynamic> queryBulletinPage(SysBulletin bulletin) throws ParseException {
+
+    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+    String time;
+
+    List<SelectDynamic> dataList = bulletinMapper.queryBulletinPage(bulletin);
+
+    for (int i = 0; i < dataList.size(); i++) {
+      time = df.format(dataList.get(i).getCreationtime());
+      dataList.get(i).setStrcreationtime(time);
+      dataList.get(i).setCreationtime(null);
+    }
+    return dataList;
+  }
+
+  public int deleteAppInfo(int id) {
+
+    return appInfoMapper.deleteAppInfo(id);
+  }
+
+  public int updateAppInfo(AppInfo appInfo) {
+
+    return appInfoMapper.updateAppInfo(appInfo);
+  }
+
+  public int updateList(Map<String, Object> map) {
+
+    return appInfoMapper.updateList(map);
+  }
+
+  public int closeList(Map<String, Object> map) {
+
+    return appInfoMapper.closeList(map);
+  }
+
+  public int deleteList(Map<String, Object> map) {
+
+    return appInfoMapper.deleteList(map);
+  }
+
+  public int updateValidate(AppInfo appInfo) {
+
+    return appInfoMapper.updateValidate(appInfo);
+  }
+
+  // 查询点赞头像列表
+  public List<SysUserInfo> queryPhotoList(Dynamic dynamic) {
+    return bulletinMapper.queryPhotoList(dynamic);
+  }
+
+  public List<SysImage> queryPictureList(SysImageRelation ir) {
+    return bulletinMapper.queryPictureList(ir);
+  }
+
+  public List<Replay> queryReplayList(Replay replay) {
+    return bulletinMapper.queryReplayList(replay);
+  }
+
+  // 获取用户头像地址
+  public String getBlob(HttpServletRequest request, Integer userId) throws IOException {
+
+    LoginUserInfo userInfo = new LoginUserInfo();
+    userInfo.setUserid(userId);
+    userInfo = loginUserService.findLoginUserById(userInfo);
+
+    String scheme = request.getScheme();
+    String serverName = request.getServerName();
+    int serverPort = request.getServerPort();
+    String contextPath = request.getContextPath();
+    String resourcePath = "/static/images/";
+
+    // 初始加载路径
+    String loadPath =
+        scheme + "://" + serverName + ":" + serverPort + contextPath
+            + resourcePath.replaceAll("\\|", "/");
+    String str;
+
+    if (!"".equals(userInfo.getPhotourl()) && userInfo.getPhotourl() != null) {
+      // 文件夹存在时候的路径
+      String subPath = "/resources/uploadImages/userLogo/";
+      String existPath =
+          scheme + "://" + serverName + ":" + serverPort + contextPath + subPath
+              + userInfo.getPhotourl() + "/";
+      str = existPath + "180x180.jpg";
+    } else {
+      str = loadPath + "180x180.jpg";
+    }
+    return str;
+  }
+
+  // 获取用户头像图片
+  public Blob getPhoto(HttpServletRequest request, String photourl) throws IOException {
+
+    String scheme = request.getScheme();
+    String serverName = request.getServerName();
+    int serverPort = request.getServerPort();
+    String contextPath = request.getContextPath();
+    String resourcePath = "/static/images/";
+
+    // 初始加载路径
+    String loadPath =
+        scheme + "://" + serverName + ":" + serverPort + contextPath
+            + resourcePath.replaceAll("\\|", "/");
+    BufferedImage image;
+
+    if (!"".equals(photourl) && photourl != null) {
+      // 文件夹存在时候的路径
+      String subPath = "/resources/uploadImages/userLogo/";
+      String existPath =
+          scheme + "://" + serverName + ":" + serverPort + contextPath + subPath + photourl + "/";
+      image = ImageIO.read(new File(existPath + "180x180.jpg"));
+    } else {
+      image = ImageIO.read(new File(loadPath + "180x180.jpg"));
+    }
+    return (Blob) image;
+  }
+
+  public int insertMessage(SysBulletin bulletin) {
+
+    return bulletinMapper.insertMessage(bulletin);
+  }
+
+  public int queryDynamic(Dynamic dynamic) {
+    return bulletinMapper.queryDynamic(dynamic);
+  }
+
+  public int insertDynamic(Dynamic dynamic) {
+    return bulletinMapper.insertDynamic(dynamic);
+  }
+
+  public int insertReplay(Replay replay) {
+    return bulletinMapper.insertReplay(replay);
+  }
+
+  public SelectDynamic queryDetail(SysBulletin bulletin) {
+    return bulletinMapper.queryDetail(bulletin);
+  }
+  
+  //公告列表获取
+  public List<SysBulletin> queryBulletinList(SysBulletin sysBulletin){
+    return this.bulletinMapper.queryBulletinList(sysBulletin);
+  }
+  
+  //公告信息查询
+  public SysBulletin queryByBulletinId(Integer bulletinId){
+    return this.bulletinMapper.queryByBulletinId(bulletinId);
+  }
+  
+  //图片信息查询
+  public List<SysImage> queryImageList(SysImageRelation sysImageRelation){
+    return this.bulletinMapper.queryImageList(sysImageRelation);
+  }
+
+  //公告信息保存
+   public Integer addBulletinInfo(SysBulletin sysBulletin){
+     return this.bulletinMapper.addBulletinInfo(sysBulletin);
+   }
+}

@@ -1,0 +1,33 @@
+/**
+ * 用户绑定身份信息js
+ * Created by PoohDing on 2015/12/16.
+ */
+
+/*$(function () {
+ $("#wizard").steps({
+ //头部信息绑定的元素
+ headerTag: "h2",
+ //内容信息绑定的元素
+ bodyTag: "section",
+ transitionEffect: "slideLeft",
+ //标签重命名
+ labels: {
+ pagination: "分页",
+ finish: "完成",
+ next: "下一步",
+ previous: "上一步",
+ loading: "加载中 ..."
+ }
+ });
+ });*/
+$(function () {
+
+    $('.selectpicker').selectpicker();
+    $('input').iCheck({
+        labelHover: false,
+        cursor: true,
+        checkboxClass: 'icheckbox_square-blue',
+        radioClass: 'iradio_square-blue',
+        increaseArea: '20%'
+    });
+});

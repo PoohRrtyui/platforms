@@ -1,0 +1,65 @@
+package com.xunyun.infanteduplatform.persistent;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Repository;
+
+import com.xunyun.infanteduplatform.domain.AppInfo;
+import com.xunyun.infanteduplatform.domain.SysUserInfo;
+import com.xunyun.infanteduplatform.domain.interaction.Dynamic;
+import com.xunyun.infanteduplatform.domain.interaction.Replay;
+import com.xunyun.infanteduplatform.domain.interaction.SelectDynamic;
+import com.xunyun.infanteduplatform.domain.interaction.SysBulletin;
+import com.xunyun.infanteduplatform.domain.interaction.SysImage;
+import com.xunyun.infanteduplatform.domain.interaction.SysImageRelation;
+
+@Repository
+public interface BulletinMapper {
+  // 公告列表获取
+  List<SysBulletin> queryBulletinList(SysBulletin sysBulletin);
+
+  // 公告信息查询
+  SysBulletin queryByBulletinId(Integer bulletinId);
+
+  // 图片信息查询
+  List<SysImage> queryImageList(SysImageRelation sysImageRelation);
+
+  // 公告信息保存
+  Integer addBulletinInfo(SysBulletin sysBulletin);
+
+  //班级动态列表
+  List<SelectDynamic> queryBulletinPage(SysBulletin bulletin);
+
+  int deleteAppInfo(int id);
+
+  int updateAppInfo(AppInfo appInfo);
+
+  int updateList(Map<String, Object> map);
+
+  int closeList(Map<String, Object> map);
+
+  int deleteList(Map<String, Object> map);
+
+  int updateValidate(AppInfo appInfo);
+
+  //点赞者头像列表
+  List<SysUserInfo> queryPhotoList(Dynamic dynamic);
+
+  //每条班级动态图片列表
+  List<SysImage> queryPictureList(SysImageRelation ir);
+
+  //回复列表
+  List<Replay> queryReplayList(Replay replay);
+
+  int insertMessage(SysBulletin bulletin);
+
+  int queryDynamic(Dynamic dynamic);
+
+  int insertDynamic(Dynamic dynamic);
+
+  int insertReplay(Replay replay);
+
+  SelectDynamic queryDetail(SysBulletin bulletin);
+  
+}

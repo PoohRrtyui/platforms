@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.RegisterMapper">
+	<!--用戶注册-->	
+	<insert id="register" parameterType="com.xunyun.infanteduplatform.domain.SysUserLogin">
+		<selectKey keyProperty="id" resultType="int" order="BEFORE">
+			select SEQ_USERLOGIN.nextval from dual
+		</selectKey>
+	 	   insert into USERLOGIN (UserId,Name,Mobile,Password) values(#{id},#{name},#{mobile},#{password})
+	</insert>
+	
+	<!--注册查重-->
+	<select id="updateValidate" parameterType="java.util.Map" resultType="int" >	
+		select count(*) from userlogin where Name=#{name} or Mobile=#{mobile}
+	</select>
+	
+	<!--注册信息加入用户信息表-->
+	<insert id="addUserInfo" parameterType="com.xunyun.infanteduplatform.domain.SysUserInfo">
+	 	   insert into USERINFO (USERID,USERNAME,DELETEFLG,CREATIONTIME,CREATEDBY,LASTUPDATETIME,LASTUPDATEDBY) values(#{userid},#{username},#{deleteflg},#{creationtime},#{createdby},#{lastupdatetime},#{lastupdatedby})
+	</insert>	
+	
+	<!--注册信息加入机构信息表-->
+	<insert id="addUserInOrg" parameterType="com.xunyun.infanteduplatform.domain.SysUserInorg">
+	 	   insert into USERINORG (UserId,UserType,IsAdmin) values(#{userId},#{userType},#{isAdmin})
+	</insert>	
+</mapper>

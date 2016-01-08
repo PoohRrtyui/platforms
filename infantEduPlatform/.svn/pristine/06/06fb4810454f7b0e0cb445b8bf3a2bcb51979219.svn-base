@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.BulletinMapper">
+	   <resultMap type="com.xunyun.infanteduplatform.domain.interaction.SelectDynamic" id="SelectDynamicResultMap">
+        <result column="BULLETINID" property="BulletinId" jdbcType="INTEGER"/>
+        <result column="BULLETINCONTENT" property="bulletincontent" jdbcType="VARCHAR"/>
+        <result column="creationtime" property="creationtime" jdbcType="DATE"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="PHOTOURL" property="photourl" jdbcType="VARCHAR"/>
+        <result column="DATACOUNT" property="dataCount" jdbcType="INTEGER"/>
+        <result column="ROWNUMBER" property="rownumber" jdbcType="INTEGER"/>
+    </resultMap>
+	
+	<!--
+	<select id="findById" parameterType="int" resultType="com.xunyun.infanteduplatform.domain.AppInfo">
+			select * from APPINFO where APPID=#{id}
+		</select>
+		
+		<insert id="addAppInfo" parameterType="com.xunyun.infanteduplatform.domain.AppInfo">
+				insert into appInfo values(SEQ_APPINFO.nextval,#{appCode},#{appName},#{platform},#{locationCode},#{state},#{iconUrl},#{summery},#{creationTime},#{createdBy},#{lastUpdateTime},#{lastUpdatedBy})
+		</insert>-->
+	
+	<!-- 查询动态图片列表 -->
+	<select id="queryPictureList" parameterType="com.xunyun.infanteduplatform.domain.SysImageRelation" 
+		resultType="com.xunyun.infanteduplatform.domain.SysImage" >
+			select im.ImageContent from II_ImageRelation ir 
+				left join II_Image im on im.ImageId = ir.ImageId
+			where ir.moduleId = #{moduleId } 
+		</select>
+		
+	<!-- 查询点赞头像列表 -->
+	<select id="queryPhotoList" parameterType="com.xunyun.infanteduplatform.domain.interaction.Dynamic" 
+			resultType="com.xunyun.infanteduplatform.domain.SysUserInfo" >
+				select ui.photourl,
+				count(*) over () countDynamic
+				 from II_DYNAMIC dy 
+					left join IB_USERINFO ui on ui.userid = dy.userid
+				where dy.moduleId = #{moduleId } 
+			</select>
+	
+		
+	<!-- 查询回复列表 -->
+	<select id="queryReplayList" parameterType="com.xunyun.infanteduplatform.domain.interaction.Replay" 
+			resultType="com.xunyun.infanteduplatform.domain.interaction.Replay" >
+				select re.ReplayContent, re.replaytime, ui.name as name,
+				count(*) over () countReplay
+				 from II_Replay re
+					left join IB_USERINFO ui on ui.userid = re.userid
+				where re.moduleId = #{moduleId } 
+			</select>
+	
+	<!-- 初始加载查询数据 -->
+	<select id="queryBulletinPage" parameterType="com.xunyun.infanteduplatform.domain.SysBulletin" resultMap="SelectDynamicResultMap">
+		<![CDATA[
+				SELECT b.* FROM (
+					SELECT a.*, rownum AS rownumber
+					FROM (
+						SELECT 
+							c.BulletinId,
+							c.bulletincontent,
+							c.creationtime,
+							ui.name,
+							ui.photourl,
+							COUNT(*) OVER () dataCount 
+						FROM II_BULLETIN c 
+						LEFT JOIN IB_USERINFO ui
+							on ui.userid = c.createdBy
+							where c.organizationId = #{organizationId}
+							and c.classId = #{classId}
+							and c.deleteflg = 0
+							and c.bulletintype = 3
+						ORDER BY c.BulletinId
+						) a WHERE rownum <= #{endNumber jdbcType=INTEGER} 	
+				) b	WHERE b.rownumber >= #{startNumber jdbcType=INTEGER} 
+			]]>
+		</select>
+	
+</mapper>

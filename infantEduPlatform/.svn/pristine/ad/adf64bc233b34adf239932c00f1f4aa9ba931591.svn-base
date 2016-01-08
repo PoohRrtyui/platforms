@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.CodeMasterMapper">
+	<resultMap type="com.xunyun.infanteduplatform.domain.SysCodeMaster" id="CodeMasterResultMap">
+		<result column="largeCategoryCd" property="largeCategoryCd" jdbcType="VARCHAR"/>
+		<result column="largeCategoryName" property="largeCategoryName" jdbcType="VARCHAR"/>
+		<result column="middleCategoryCd" property="middleCategoryCd" jdbcType="VARCHAR"/>
+		<result column="middleCategoryName" property="middleCategoryName" jdbcType="VARCHAR"/>
+		<result column="smallCategoryCd" property="smallCategoryCd" jdbcType="VARCHAR"/>
+		<result column="smallCategoryName" property="smallCategoryName" jdbcType="VARCHAR"/>
+		<result column="description" property="description" jdbcType="VARCHAR"/>
+		<result column="orderNo" property="orderNo" jdbcType="INTEGER"/>
+		<result column="systemFlg" property="systemFlg" jdbcType="INTEGER"/>
+		<result column="attribute1" property="attribute1" jdbcType="VARCHAR"/>
+		<result column="attribute2" property="attribute2" jdbcType="VARCHAR"/>
+		<result column="attribute3" property="attribute3" jdbcType="VARCHAR"/>
+		<result column="attribute4" property="attribute4" jdbcType="VARCHAR"/>
+		<result column="attribute5" property="attribute5" jdbcType="VARCHAR"/>
+		<result column="deleteFlg" property="deleteFlg" jdbcType="INTEGER"/>
+		<result column="countNumber" property="countNumber" jdbcType="INTEGER"/>
+	</resultMap>
+	<!-- 初始加载查询数据 -->
+	<select id="queryCodeMasterInfo" parameterType="com.xunyun.infanteduplatform.domain.SysCodeMaster"
+		resultMap="CodeMasterResultMap">
+		<![CDATA[
+			SELECT b.* FROM (
+				SELECT 
+				a.*,
+				rownum AS rownumber
+				FROM (
+					SELECT 
+						LARGECATEGORYCD,
+						LARGECATEGORYNAME,
+						MIDDLECATEGORYCD,
+						MIDDLECATEGORYNAME,
+						SMALLCATEGORYCD,
+						SMALLCATEGORYNAME,
+						DESCRIPTION,
+						ORDERNO,
+						SYSTEMFLG,
+						DELETEFLG,
+						COUNT(*) OVER () COUNTNUMBER 
+					FROM CODEMASTER WHERE deleteFlg = 0 
+		]]>
+		<if test="keyValue != null and keyValue != ''">
+			<![CDATA[
+					AND
+					(LARGECATEGORYNAME like '%'||#{keyValue}||'%'
+					OR MIDDLECATEGORYNAME like '%'||#{keyValue}||'%' 
+					OR SMALLCATEGORYNAME like '%'||#{keyValue}||'%' )
+			]]>		
+		</if>
+		<![CDATA[	
+					ORDER BY ORDERNO
+					) a WHERE rownum <= #{endNumber jdbcType=INTEGER} 	
+			) b	WHERE b.rownumber >= #{startNumber jdbcType=INTEGER} 
+		]]> 
+	</select>
+	
+	<!-- 数据字典添加数据 -->
+	<insert id="saveCodeMasterInfo" 
+		parameterType="com.xunyun.infanteduplatform.domain.SysCodeMaster">
+		<![CDATA[
+		insert into CODEMASTER a (
+			a.largeCategoryCd,
+			a.largeCategoryName,
+			a.middleCategoryCd,
+			a.middleCategoryName,
+			a.smallCategoryCd,
+			a.smallCategoryName,
+			a.description,
+			a.orderNo,
+			a.systemFlg,
+			a.deleteFlg)
+			values(
+			#{largeCategoryCd jdbcType=VARCHAR},
+			#{largeCategoryName jdbcType=VARCHAR},
+			#{middleCategoryCd jdbcType=VARCHAR},
+			#{middleCategoryName jdbcType=VARCHAR},
+			#{smallCategoryCd jdbcType=VARCHAR},
+			#{smallCategoryName jdbcType=VARCHAR},
+			#{description jdbcType=VARCHAR},
+			#{orderNo jdbcType=INTEGER},
+			#{systemFlg jdbcType=INTEGER},
+			0)
+		]]>
+	</insert>
+	
+	<!-- 添加功能查重验证 -->
+	<select id="querySaveRepeat" resultMap="CodeMasterResultMap"
+		parameterType="com.xunyun.infanteduplatform.domain.SysCodeMaster">
+		<![CDATA[
+		select 
+			a.largeCategoryCd,
+			a.smallCategoryCd,
+			a.orderNo
+		from CODEMASTER a
+		where a.orderNo = #{orderNo}
+			and a.deleteFlg = 0
+		]]>
+	</select>
+	<!-- 数据字典修改功能 -->
+	<update id="updateCodeMasterInfo" parameterType="com.xunyun.infanteduplatform.domain.SysCodeMaster">
+		<![CDATA[
+			update CODEMASTER　ca 
+		]]>
+		<set>
+			<![CDATA[
+				ca.largeCategoryCd = #{largeCategoryCd jdbcType=VARCHAR},
+				ca.largeCategoryName = #{largeCategoryName jdbcType=VARCHAR},
+				ca.middleCategoryCd = #{middleCategoryCd jdbcType=VARCHAR},
+				ca.middleCategoryName = #{middleCategoryName jdbcType=VARCHAR},
+				ca.smallCategoryCd = #{smallCategoryCd jdbcType=VARCHAR},
+				ca.smallCategoryName = #{smallCategoryName jdbcType=VARCHAR},
+				ca.description = #{description jdbcType=VARCHAR},
+				ca.orderNo = #{orderNo jdbcType=INTEGER},
+				ca.systemFlg = #{systemFlg jdbcType=INTEGER}
+			]]>
+		</set>
+		where ca.smallCategoryCd = #{smallCategoryCd}
+	</update>
+	<!-- 数据字典逻辑删除 -->
+	<update id="deleteCodeMaster" parameterType="com.xunyun.infanteduplatform.domain.SysCodeMaster">
+		<![CDATA[
+			update CODEMASTER a
+		]]>
+		<set>
+			<![CDATA[
+				a.deleteFlg = 1
+			]]>
+		</set>
+			where a.smallCategoryCd = #{smallCategoryCd} 
+	</update>
+	<select id="findOrg" resultMap="CodeMasterResultMap">
+		select cm.smallcategorycd,cm.smallcategoryname from CODEMASTER cm where cm.middlecategoryname = #{string}
+	</select>
+
+	<select id="queryCodeMasterList" resultMap="CodeMasterResultMap"
+			parameterType="com.xunyun.infanteduplatform.domain.SysCodeMaster">
+		<![CDATA[
+		select
+			cm.largeCategoryCd,
+			cm.largeCategoryName,
+			cm.middleCategoryCd,
+			cm.middleCategoryName,
+			cm.smallCategoryCd,
+			cm.smallCategoryName,
+			cm.orderNo
+		from codeMaster cm
+		where  cm.deleteFlg = 0
+		]]>
+		<if test="largeCategoryCd != null and '' != largeCategoryCd">
+			and cm.largeCategoryCd = #{largeCategoryCd}
+		</if>
+		<if test="middleCategoryCd != null and '' != middleCategoryCd">
+			and cm.middleCategoryCd = #{middleCategoryCd}
+		</if>
+		<if test="smallCategoryCd != null and '' != smallCategoryCd">
+			and cm.smallCategoryCd = #{smallCategoryCd}
+		</if>
+	</select>
+
+
+</mapper>

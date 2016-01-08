@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.ClassManageMapper">
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache" /> -->
+	<resultMap type="com.xunyun.infanteduplatform.domain.ClassManageEntity" id="ClassEntityResultMap">
+		<result column="classId" property="classId" jdbcType="NUMERIC"/>
+		<result column="classCode" property="classCode" jdbcType="VARCHAR"/>
+		<result column="classStyle" property="classStyle" jdbcType="VARCHAR"/>
+		<result column="className" property="className" jdbcType="VARCHAR"/>
+		<result column="establishmentDate" property="establishmentDate" jdbcType="DATE"/>
+		<result column="schoolingLength" property="schoolingLength" jdbcType="INTEGER"/>
+		<result column="classTypeCode" property="classTypeCode" jdbcType="VARCHAR"/>
+		<result column="homePageUrl" property="homePageUrl" jdbcType="VARCHAR"/>
+		<result column="ipAddress" property="ipAddress" jdbcType="VARCHAR"/>
+		<result column="deleteFlg" property="deleteFlg" jdbcType="VARCHAR"/>
+		<result column="creationTime" property="creationTime" jdbcType="DATE"/>
+		<result column="createdBy" property="createdBy" jdbcType="VARCHAR"/>
+		<result column="lastupdateTime" property="lastupdateTime" jdbcType="DATE"/>
+		<result column="lastupdatedBy" property="lastupdatedBy" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	<resultMap type="com.xunyun.infanteduplatform.domain.SysUserInorg" id="SysUserInorgResultMap">
+		<result column="userId" property="userId" jdbcType="NUMERIC"/>
+		<result column="organizationCode" property="organizationCode" jdbcType="VARCHAR"/>
+		<result column="organizationType" property="organizationType" jdbcType="INTEGER"/>
+		<result column="userType" property="userType" jdbcType="INTEGER"/>
+		<result column="startTime" property="startTime" jdbcType="DATE"/>
+		<result column="userCode" property="userCode" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	
+	<!-- 初始班级查询 -->
+	<select id="queryclass"  resultMap="ClassEntityResultMap">
+	<![CDATA[
+	 select l.className AS className,
+	        l.establishmentDate AS establishmentDate,
+	        l.deleteFlg AS deleteFlg
+	       from CLASSINFO l
+	      where  l.deleteFlg='0' 
+	]]>
+	</select>
+	
+	<!-- 增加班级时查询教师信息 -->
+	<select id="queryclassteacher" resultMap="SysUserInorgResultMap">
+	<![CDATA[
+	 select
+	 l. userId AS userId,
+	 l.organizationCode AS organizationCode,
+	 l.UserType AS UserType
+	 from USERINORG l
+	 where l.organizationCode='' and l.UserType=''
+	        
+	]]>
+	
+	</select>
+</mapper>

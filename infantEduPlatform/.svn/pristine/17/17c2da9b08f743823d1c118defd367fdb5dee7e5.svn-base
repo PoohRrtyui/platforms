@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.BulletinMapper">
+	
+	<!--插入回复信息-->
+	<insert id="insertReplay" parameterType="com.xunyun.infanteduplatform.domain.interaction.Replay">
+		<selectKey resultType="INTEGER" order="BEFORE" keyProperty="ReplayId">  
+		   SELECT SEQ_II_REPLAY.nextval as did from DUAL
+	   </selectKey> 
+		
+		INSERT INTO II_REPLAY(ReplayId, ModuleId, UserId, ReplayTime, TargetId, ReplayContent) VALUES(SEQ_II_REPLAY.CURRVAL, 
+		#{ModuleId}, #{UserId},#{ReplayTime},#{TargetId},#{ReplayContent})
+	</insert>
+	
+	<!-- 查询回复列表 -->
+	<select id="queryReplayList" parameterType="com.xunyun.infanteduplatform.domain.interaction.Replay" 
+			resultType="com.xunyun.infanteduplatform.domain.interaction.ReplayModel" >
+				select re.ReplayContent as ReplayContent, re.replaytime as replaytime, ui.name as name
+				 from II_Replay re
+					left join IB_USERINFO ui on ui.userid = re.userid
+				where re.moduleId = #{moduleId } 
+			</select>
+</mapper>

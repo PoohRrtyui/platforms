@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.SchoolMapper">
+
+    <resultMap type="com.xunyun.infanteduplatform.domain.SchoolInfo" id="SchoolInfoResultMap">
+        <result column="schoolId" property="schoolId" jdbcType="NUMERIC"/>
+        <result column="schoolCode" property="schoolCode" jdbcType="VARCHAR"/>
+        <result column="schoolStyle" property="schoolStyle" jdbcType="INTEGER"/>
+        <result column="schoolName" property="schoolName" jdbcType="VARCHAR"/>
+        <result column="schoolAddress" property="schoolAddress" jdbcType="VARCHAR"/>
+        <result column="dutyPerson" property="dutyPerson" jdbcType="VARCHAR"/>
+        <result column="postalCode" property="postalCode" jdbcType="VARCHAR"/>
+        <result column="telephone" property="telephone" jdbcType="VARCHAR"/>
+        <result column="homepageUrl" property="homepageUrl" jdbcType="VARCHAR"/>
+        <result column="bureauId" property="bureauId" jdbcType="INTEGER"/>
+        <result column="bureauName" property="bureauName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="querySchoolByBureauId" resultMap="SchoolInfoResultMap">
+        select
+        s.schoolId,
+        s.schoolName,
+        s.dutyPerson
+        from ib_schoolInfo s
+        inner join ib_schoolRelation sr
+        on sr.schoolId = s.schoolId
+        where sr.bureauId = #{BureauId}
+        and s.deleteFlg = 0
+    </select>
+
+    <select id="querySchool" resultType="com.xunyun.infanteduplatform.domain.SchoolInfo">
+        select s.schoolId,s.schoolCode,s.schoolStyle,s.schoolName,s.schoolAddress,
+        s.dutyPerson,s.postalCode,s.telephone,s.homepageUrl,sr.bureauId,b.bureauName
+        from ib_schoolInfo s
+        inner join ib_schoolRelation sr
+        on s.schoolId = sr.schoolId
+        inner join ib_bureauInfo b
+        on sr.bureauId = b.organizationId
+        where 1=1
+        <if test="schoolId!=null">
+            and s.schoolId= #{schoolId}
+        </if>
+    </select>
+
+    <select id="querySchoolByNameAndBureauId"
+            resultType="Integer">
+        select count(0) from ib_schoolInfo s
+        inner join ib_schoolRelation sr
+        on s.schoolId = sr.schoolId
+        where 1=1
+        <if test="bureauId!=null">
+            and bureauId = #{bureauId}
+        </if>
+        <if test="schoolName!=null">
+            and s.schoolName = #{schoolName}
+        </if>
+        <if test="schoolCode!=null">
+            and s.schoolCode = #{schoolCode}
+        </if>
+        <if test="schoolId!=null">
+            and s.schoolId != #{schoolId}
+        </if>
+        and s.deleteFlg = 0
+    </select>
+    <insert id="saveSchool" parameterType="com.xunyun.infanteduplatform.domain.SchoolInfo"
+            useGeneratedKeys="true">
+        <selectKey resultType="Integer" order="BEFORE" keyProperty="schoolId">
+            select SEQ_SchoolInfo.nextVal from dual
+        </selectKey>
+        insert into ib_schoolInfo(schoolId,schoolCode,schoolStyle,schoolName,
+        schoolAddress,dutyPerson,postalCode,telephone,homepageUrl,
+        deleteFlg,createdBy,creationTime,lastUpdateTime,lastUpdatedBy)
+        values
+        (#{schoolId},#{schoolCode,jdbcType=VARCHAR},#{schoolStyle},#{schoolName},
+        #{schoolAddress},#{dutyPerson},#{postalCode},#{telephone},#{homepageUrl,jdbcType=VARCHAR},
+        #{deleteFlg},#{createdBy},#{creationTime},#{lastUpdateTime},#{lastUpdatedBy})
+    </insert>
+
+    <insert id="saveSchoolRelation"
+            parameterType="com.xunyun.infanteduplatform.domain.SchoolRelation">
+        insert into ib_schoolRelation (schoolId,bureauId)
+        values
+        (#{schoolId},#{bureauId})
+    </insert>
+
+    <update id="updateSchool" parameterType="com.xunyun.infanteduplatform.domain.SchoolInfo">
+        update ib_schoolInfo
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="schoolCode != null ">
+                schoolCode = #{schoolCode},
+            </if>
+            <if test="schoolStyle != null ">
+                schoolStyle = #{schoolStyle},
+            </if>
+            <if test="schoolName != null ">
+                schoolName = #{schoolName},
+            </if>
+            <if test="schoolAddress != null ">
+                schoolAddress = #{schoolAddress},
+            </if>
+            <if test="dutyPerson != null ">
+                dutyPerson = #{dutyPerson},
+            </if>
+            <if test="postalCode != null ">
+                postalCode = #{postalCode},
+            </if>
+            <if test="telephone != null ">
+                telephone = #{telephone},
+            </if>
+            <if test="homepageUrl != null ">
+                homepageUrl = #{homepageUrl},
+            </if>
+            <if test="createdBy != null ">
+                createdBy = #{createdBy},
+            </if>
+            <if test="creationTime != null ">
+                creationTime = #{creationTime},
+            </if>
+            <if test="lastUpdateTime != null ">
+                lastUpdateTime = #{lastUpdateTime},
+            </if>
+            <if test="lastUpdatedBy != null ">
+                lastUpdatedBy = #{lastUpdatedBy},
+            </if>
+        </trim>
+        where schoolId = #{schoolId}
+    </update>
+
+    <update id="deleteSchool" parameterType="Integer">
+        update ib_schoolInfo set deleteFlg = 1 where schoolId = #{schoolId}
+    </update>
+
+    <update id="updateSchoolRelation"
+            parameterType="com.xunyun.infanteduplatform.domain.SchoolRelation">
+        update ib_schoolRelation
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="bureauId != null ">
+                bureauId = #{bureauId},
+            </if>
+        </trim>
+        where schoolId = #{schoolId}
+    </update>
+
+    <delete id="deleteSchoolRelation" parameterType="Integer">
+        delete ib_schoolRelation where schoolId = #{schoolId}
+    </delete>
+
+
+</mapper>

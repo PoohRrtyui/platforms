@@ -1,0 +1,14 @@
+package com.xunyun.infanteduplatform.persistent;
+
+import org.springframework.stereotype.Repository;
+
+import com.xunyun.infanteduplatform.domain.interaction.Collect;
+
+@Repository
+public interface CollectMapper {
+	//收藏信息查重
+	Integer collectValidate(Collect collect);
+		
+	//交流信息收藏
+	int collectSubjects(Collect collect);
+}

@@ -1,0 +1,20 @@
+package com.xunyun.infanteduplatform.persistent;
+
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
+import com.xunyun.infanteduplatform.domain.interaction.Collect;
+import com.xunyun.infanteduplatform.domain.interaction.Discussion;
+
+@Repository
+public interface CollectMapper {
+	//收藏信息查重
+	Integer collectValidate(Collect collect);
+		
+	//交流信息收藏
+	int collectSubjects(Collect collect);
+	
+	// 我的社区（该用户收藏的交流信息）
+	List<Discussion> myCollect(Collect collect);
+}

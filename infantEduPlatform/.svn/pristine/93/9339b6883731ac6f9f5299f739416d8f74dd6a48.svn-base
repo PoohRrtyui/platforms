@@ -1,0 +1,156 @@
+package com.xunyun.infanteduplatform.service;
+
+import java.util.List;
+
+import com.xunyun.infanteduplatform.persistent.UserMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.xunyun.infanteduplatform.domain.ClassManageEntity;
+import com.xunyun.infanteduplatform.domain.SysUserInorg;
+import com.xunyun.infanteduplatform.domain.TeacherInClassEntity;
+import com.xunyun.infanteduplatform.domain.UserInClassEntity;
+import com.xunyun.infanteduplatform.persistent.ClassManageMapper;
+
+@Service("classmanageservice")
+public class ClassManageService {
+
+  @Autowired
+  private ClassManageMapper classmanagemapper;
+
+  @Autowired
+  private UserMapper userMapper;
+  // 初始查询班级
+  public List<ClassManageEntity> queryClass(ClassManageEntity classmanageentity) {
+    return this.classmanagemapper.queryclass(classmanageentity);
+  }
+
+  // 修改班级时获取该班级的信息
+  public ClassManageEntity queryUpdateClassInfo(ClassManageEntity classmanageentity) {
+    return this.classmanagemapper.queryupdateclassinfo(classmanageentity);
+  }
+
+  // 修改时获取班级主班老师信息
+  public ClassManageEntity queryUpdateClassMainTeacher(ClassManageEntity classmanageentity) {
+    return this.classmanagemapper.queryupdateclassmainteacher(classmanageentity);
+  }
+
+  // 修改时获取班级配班信息
+  public ClassManageEntity queryUpdateClassWithTeacher(ClassManageEntity classmanageentity) {
+    return this.classmanagemapper.queryupdateclasswithteacher(classmanageentity);
+  }
+
+  // 修改时获取班级保育员信息
+  public ClassManageEntity queryUpdatenurserygoverness(ClassManageEntity classmanageentity) {
+    return this.classmanagemapper.queryupdatenurserygoverness(classmanageentity);
+  }
+
+  // 修改班级时将教师任教表中被替换的教师信息删除
+  public int deleteMainteacherInClass(TeacherInClassEntity teacherinclassentity) {
+    return this.classmanagemapper.deletemainteacherinclass(teacherinclassentity);
+  }
+
+  // 修改班级时，在classinfo中修改班级名称及班级类型
+  public int updateClassInfo(ClassManageEntity classmanageentity) {
+    return this.classmanagemapper.updateclassinfo(classmanageentity);
+  }
+  
+  //修改班级时修改最终修改人与最终修改时间
+  public int updateClassUpdateInfo(ClassManageEntity classmanageentity) {
+    return this.classmanagemapper.updateclassupdateinfo(classmanageentity);
+  }
+  
+  
+  // 添加班级时查询教师信息
+  public List<?> queryClassTeacher(SysUserInorg sysuserinorg) {
+    return this.classmanagemapper.queryclassteacher(sysuserinorg);
+  }
+
+  //添加班级时班级名称查重
+  public ClassManageEntity queryRepeatClassName(ClassManageEntity classmanageentity){
+    return this.classmanagemapper.queryrepeatclassname(classmanageentity);
+  }
+  
+ //添加班级时班级代码查重
+  public ClassManageEntity queryRepeatClassCode(ClassManageEntity classmanageentity) {
+    return this.classmanagemapper.queryrepeatclasscode(classmanageentity);
+  }
+  
+//修改时班级名称查重
+  public ClassManageEntity queryUpdateRepeatClassName(ClassManageEntity classmanageentity){
+    return this.classmanagemapper.queryupdaterepeatclassname(classmanageentity);
+  }
+  
+  // 添加班级
+  public int insertClass(ClassManageEntity classmanageentity) {
+    return this.classmanagemapper.insertclass(classmanageentity);
+  }
+
+  // 添加classinforelation数据
+  public int insertClassInfoRelation(ClassManageEntity classmanageentity) {
+    return this.classmanagemapper.insertclassinforelation(classmanageentity);
+  }
+
+  // 教师任教表中添加主班老师信息
+  public int insertMainTeacherInClass(SysUserInorg sysuserinorg) {
+    return this.classmanagemapper.insertmainteacherinclass(sysuserinorg);
+  }
+
+  // 教师任教表中添加副班老师信息
+  public int insertWithTeacherInClass(SysUserInorg sysuserinorg) {
+    return this.classmanagemapper.insertwithteacherinclass(sysuserinorg);
+  }
+
+  // 教师任教表中添加保育员老师信息
+  public int insertnurserygovernessId(SysUserInorg sysuserinorg) {
+    return this.classmanagemapper.insertnurserygovernessid(sysuserinorg);
+  }
+
+
+  // 用户所属机构表中修改主班用户类型
+  public int updateMainTeacherInOrg(SysUserInorg sysuserinorg) {
+    return this.classmanagemapper.updatemainteacherinorg(sysuserinorg);
+  }
+
+  // 用户所属机构表中修改副班用户类型
+  public int updateWithTeacherInOrg(SysUserInorg sysuserinorg) {
+    return this.classmanagemapper.updatewithteacherinorg(sysuserinorg);
+  }
+
+  // 用户所属机构表中修改保育员用户类型
+  public int updateNurserygovernessInOrg(SysUserInorg sysuserinorg) {
+    return this.classmanagemapper.updatenurserygovernessinorg(sysuserinorg);
+  }
+
+
+  // 逻辑删除班级classinfo信息
+  public int updateClassDeleteFlg(ClassManageEntity classmanageentity) {
+    return this.classmanagemapper.updateclassdeleteflg(classmanageentity);
+  }
+  
+ //删除teacherinclass中该班级下的主班，配班，保育员老师
+  public int deleteSpecialTeacherInClass(TeacherInClassEntity teacherinclassentity){
+    return this.classmanagemapper.deletespecialteacherinclass(teacherinclassentity);
+  }
+
+  // 删除classinforelation信息
+  public int deleteClassinforelation(ClassManageEntity classmanageentity) {
+    return this.classmanagemapper.deleteclassinforelation(classmanageentity);
+  }
+
+  // 删除班级时查询该学校该班级下是否有学生存在
+  public List<?> queryclassstudents(UserInClassEntity userinclassentity) {
+    return this.classmanagemapper.queryclassstudents(userinclassentity);
+  }
+
+  // 删除班级时查询该学校该班级下是否有教师，教职工存在
+  public List<?> queryClassTeachers(TeacherInClassEntity teacherinclassentity) {
+    return this.classmanagemapper.queryclassteachers(teacherinclassentity);
+  }
+
+ //进入首页时查询的登陆用户信息，判断其权限进行左侧菜单显示
+  public SysUserInorg queryLoginInfo(SysUserInorg sysuserinorg) {
+    return this.classmanagemapper.querylogininfo(sysuserinorg);
+  }
+  
+}

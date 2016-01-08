@@ -1,0 +1,136 @@
+package com.xunyun.infanteduplatform.controller.department;
+
+import java.util.Calendar;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.xunyun.infanteduplatform.domain.SysDepartmentInfo;
+import com.xunyun.infanteduplatform.domain.SysDepartmentRelation;
+import com.xunyun.infanteduplatform.domain.TreeEntity;
+import com.xunyun.infanteduplatform.service.DepartmentInfoService;
+import com.xunyun.infanteduplatform.service.DepartmentRelationService;
+
+
+@Controller
+@RequestMapping("departmentInfo")
+public class DepartmentInfoController {
+
+  @Resource
+  private DepartmentInfoService departmentInfoService;
+
+  @Resource
+  private DepartmentRelationService departmentRelationService;
+
+  public DepartmentInfoService getDepartmentInfoService() {
+    return departmentInfoService;
+  }
+
+  public void setDepartmentInfoService(DepartmentInfoService departmentInfoService) {
+    this.departmentInfoService = departmentInfoService;
+  }
+
+  // 页面跳转
+  @RequestMapping("/updatedepartment")
+  public ModelAndView updatedepartment() {
+
+    return new ModelAndView("pages/departmentInfo/savedepartmentInfo");
+  }
+
+  // 初始加载页面
+  @RequestMapping("/show")
+  public ModelAndView show() {
+
+    return new ModelAndView("pages/departmentInfo/departmentInfo");
+  }
+  
+  // 查询一级部门
+  @ResponseBody
+  @RequestMapping("/select")
+  public List<TreeEntity> queryChannel(@RequestParam(defaultValue="0")int id){
+    List<TreeEntity> list = departmentRelationService.query(id);
+      return list;
+  }
+
+  // 查询部门详细信息
+  @ResponseBody
+  @RequestMapping("/findById")
+  public SysDepartmentInfo findById(@RequestParam(defaultValue = "1") int id) {
+
+    return departmentInfoService.findById(id);
+  }
+
+  // 增加、修改查重
+  @ResponseBody
+  @RequestMapping("/updateValidate")
+  public int updateValidate(TreeEntity entity) {
+
+    return departmentInfoService.updateValidate(entity);
+  }
+
+  // 增加、修改部门信息
+  @ResponseBody
+  @RequestMapping("/addDepartmentInfo")
+  public int addDepartmentRelation(SysDepartmentInfo departmentInfo, @RequestParam(
+      defaultValue = "-1") int parentId) {
+    if (parentId != -1) {
+      int count = 0;
+      departmentInfo.setFax("22222");
+      departmentInfo.setEmail("33333@qq.com");
+      departmentInfo.setOrderNo(10);
+      departmentInfo.setDeleteFlg(0);
+      departmentInfo.setCreationTime(Calendar.getInstance().getTime());
+      departmentInfo.setCreatedBy("jeff");
+      departmentInfo.setLastUpdateTime(Calendar.getInstance().getTime());
+      departmentInfo.setLastUpdatedBy("jeff");
+      SysDepartmentRelation departmentRelation = new SysDepartmentRelation();
+      departmentRelation.setBureauId(0);
+      departmentRelation.setParentDepartmentId(parentId);
+      departmentRelation.setIsChild(0);
+      count = departmentInfoService.addDepartmentRelation(departmentRelation, departmentInfo);
+      if (parentId != 0) {
+        count = departmentInfoService.updatePid(parentId);
+      }
+      return count;
+    } else {
+      departmentInfo.setLastUpdateTime(Calendar.getInstance().getTime());
+      departmentInfo.setLastUpdatedBy("jeff");
+      int count = departmentInfoService.updateDepartmentInfo(departmentInfo);
+      return count;
+    }
+  }
+
+  //查询部门是否被用户使用中
+  @ResponseBody
+  @RequestMapping("/selectCount")
+  public int selectCount(Integer id) {
+
+    return departmentInfoService.selectCount(id);
+  }
+  
+//刷新树节点
+  @RequestMapping("/findCound")
+  @ResponseBody
+  public int findCound(Integer pId) {
+    int count =departmentInfoService.findCound(pId);
+    if ( count== 0) {
+      departmentInfoService.update(pId);
+    }
+    return count;
+  }
+
+  // 删除部门信息
+  @RequestMapping("/deleteDepartmentInfo")
+  @ResponseBody
+  public int deleteDepartmentInfo(Integer id, Integer pId) {
+  
+    return departmentInfoService.deleteDepartmentInfo(id);
+  }
+}

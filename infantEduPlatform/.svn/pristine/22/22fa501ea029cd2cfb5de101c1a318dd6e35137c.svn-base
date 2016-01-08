@@ -1,0 +1,128 @@
+package com.xunyun.infanteduplatform.controller.interaction.Dynamic;
+
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.xunyun.infanteduplatform.domain.SysBulletin;
+import com.xunyun.infanteduplatform.domain.SysImage;
+import com.xunyun.infanteduplatform.domain.SysImageRelation;
+import com.xunyun.infanteduplatform.domain.SysUserInfo;
+import com.xunyun.infanteduplatform.domain.interaction.Dynamic;
+import com.xunyun.infanteduplatform.domain.interaction.Replay;
+import com.xunyun.infanteduplatform.domain.interaction.SelectDynamic;
+import com.xunyun.infanteduplatform.service.AppInfoService;
+import com.xunyun.infanteduplatform.service.BulletinService;
+
+@Controller
+@RequestMapping("dynamic")
+public class ClassDynamicController {
+
+  @Autowired
+  private BulletinService bulletinService;
+  
+  @Autowired
+  private AppInfoService appInfoService;
+  
+  /**
+   * 查询班级动态列表
+   * @param organizationId
+   * @param appCode
+   * @param classId
+   * @param pageIndex
+   * @param pageSize
+   * @return
+   * @throws ParseException 
+   */
+  @ResponseBody
+  @RequestMapping("/queryMessageList")
+  public Map<String, Object> queryMessageList(Integer organizationId, String appCode, Integer classId,
+      @RequestParam(defaultValue = "1")Integer pageIndex, 
+      @RequestParam(defaultValue = "10")Integer pageSize) throws ParseException {
+    
+    HashMap<String, Object> map = new HashMap<String, Object>(); 
+    
+    if(appCode==null){
+      map.put("state", "error");
+      map.put("message", "应用系统代码为空，查询失败!");
+      map.put("data", "");
+    }else if (!appInfoService.findByAppCode(appCode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码未开启，查询失败!");
+      map.put("data", "");
+    } else if ("".equals(organizationId) || organizationId == null) {
+      map.put("state", "error");
+      map.put("message", "机构代码为空，查询失败!");
+      map.put("data", "");
+    } else if ("".equals(classId) || classId == null) {
+      map.put("state", "error");
+      map.put("message", "classId类型有误!");
+      map.put("data", "");
+    } else {
+      
+      // 开始条数
+      Integer startNumber = pageSize * (pageIndex - 1) - 1;// 起始条数
+      // 结束条数
+      Integer endNumber = pageIndex * pageSize;// 终止条数
+      // 总数目
+      int countNumber = 0;
+
+      SysBulletin bulletin = new SysBulletin();
+      bulletin.setClassId(classId);
+      bulletin.setOrganizationId(organizationId);
+      bulletin.setStartNumber(startNumber);
+      bulletin.setEndNumber(endNumber);
+
+      List<SelectDynamic> listData = bulletinService.queryBulletinPage(bulletin);
+      // 数据不为空，取总数
+      if (listData != null && listData.size() > 0) {
+        countNumber = listData.get(0).getDataCount();
+        
+        Integer bulletinId;
+        for(SelectDynamic sd: listData){
+          bulletinId = sd.getBulletinId();
+          
+        //点赞者头像列表
+          Dynamic dynamic = new Dynamic();
+          dynamic.setModuleId(bulletinId);
+          List<SysUserInfo> listPhoto = bulletinService.queryPhotoList(dynamic);
+          
+        //动态图片列表
+          SysImageRelation ir = new SysImageRelation();
+          ir.setModuleId(bulletinId);
+          List<SysImage> listpic = bulletinService.queryPictureList(ir);
+          
+        //回复列表
+          Replay replay = new Replay();
+          replay.setModuleId(bulletinId);
+          List<Replay> listReplay = bulletinService.queryReplayList(replay);
+          
+          map.put("listphoto", listPhoto);
+          map.put("listpic", listpic);
+          map.put("listReplay", listReplay);
+        }
+      }
+      //页数
+      int pageCount = (int) Math.ceil((double)countNumber/pageSize);
+      
+      // 总条数
+      map.put("dataCount", countNumber);
+      map.put("pageCount", pageCount);
+      map.put("pageIndex", pageIndex);
+      map.put("pageSize", pageSize);
+      // 数据列表
+      map.put("data", listData);
+    }
+
+    return map;
+
+  }
+  
+}

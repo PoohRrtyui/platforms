@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.DirectoryMapper">
+	<!-- 联系人列表获取 -->
+	<select id="queryDirectoryList"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Directory"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Directory">
+		 <![CDATA[
+				SELECT	
+					uc.userId,
+					uf.name,
+					uf.mobile,
+					uf.photoUrl
+				FROM　IB_USERINCLASS uc 
+				LEFT JOIN  IB_USERINFO  uf ON  uc.userId = uf.userId
+				LEFT JOIN  IB_USERINORG  uo ON  uc.userId = uo.userId
+          		WHERE  uc.classId =#{classId}
+			 	AND   uc.organizationId =#{organizationId }
+          		AND   uo.userType= 16	
+		 ]]>
+
+	</select>
+</mapper>

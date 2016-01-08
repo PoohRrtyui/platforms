@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.LoginUserMapper">
+	
+	<select id="findLoginUserById" resultType="com.xunyun.infanteduplatform.domain.LoginUserInfo" parameterType="com.xunyun.infanteduplatform.domain.LoginUserInfo">
+	       select ui.userid,ui.username,ui.nickname,ui.name,ui.gendercode,ui.idtype,
+			ui.idno, to_char(ui.birthday,'yyyy-MM-dd') birthday,ui.mobile,ui.email,ui.photourl,
+			uo.organizationid,uo.organizationtype,uo.usertype,uo.isadmin,
+			ud.departmentid,tc.classid AS teacherClassId,tc.type AS teacherType,
+			uc.classid AS studentClassId,bi.bureauName,si.schoolName,di.departmentName,ci.className 
+			from ib_userinfo ui
+			left join ib_userinorg uo on uo.userid = ui.userid
+			left join ib_userindept ud on ud.userid = ui.userid
+			left join ib_teacherinclass tc on tc.userid = ui.userid
+			left join ib_userinclass uc on uc.userid = ui.userid
+	        left join ib_bureauInfo bi on bi.organizationId = uo.organizationid
+	        left join ib_SchoolInfo si on si.schoolId = uo.organizationid
+	        left join ib_departmentInfo di on di.departmentId = ud.departmentid
+	        left join ib_classInfo ci on ci.classId = uc.classid
+			where ui.userid = #{userid }
+	</select>
+	
+</mapper>

@@ -1,0 +1,144 @@
+package com.xunyun.infanteduplatform.domain;
+
+import java.util.Date;
+
+public class Discussion {
+	//交流id
+	private Integer DiscussionId;
+	//机构代码
+	private String OrganizationId;
+	//交流内容
+	private String Content;
+	//删除标记
+	private Integer DeleteFlg;
+	//来源
+	private Integer Sources;
+	//级别
+	private Integer Level;
+	//专题
+	private String Subject;
+	//创建时间
+	private Date CreationTime;
+	//创建人
+	private String CreatedBy;
+	//最终修改时间
+	private Date LastUpdateTime;
+	//最终修改人
+	private String LastUpdatedBy;
+	//开始数目
+	private Integer startNumber;
+	//结束数目
+	private Integer endNumber;
+	// 交流总条数
+    private Integer dataCount;
+	//回复总条数
+    private Integer replyCount;
+    //点赞总条数
+    private Integer dynamicCount;
+    //作者头像
+    private String authorPhotoUrl;
+	
+	public String getAuthorPhotoUrl() {
+		return authorPhotoUrl;
+	}
+	public void setAuthorPhotoUrl(String authorPhotoUrl) {
+		this.authorPhotoUrl = authorPhotoUrl;
+	}
+	public Integer getReplyCount() {
+		return replyCount;
+	}
+	public void setReplyCount(Integer replyCount) {
+		this.replyCount = replyCount;
+	}
+	public Integer getDynamicCount() {
+		return dynamicCount;
+	}
+	public void setDynamicCount(Integer dynamicCount) {
+		this.dynamicCount = dynamicCount;
+	}
+	public Integer getDataCount() {
+		return dataCount;
+	}
+	public void setDataCount(Integer dataCount) {
+		this.dataCount = dataCount;
+	}
+	public Integer getStartNumber() {
+		return startNumber;
+	}
+	public void setStartNumber(Integer startNumber) {
+		this.startNumber = startNumber;
+	}
+	public Integer getEndNumber() {
+		return endNumber;
+	}
+	public void setEndNumber(Integer endNumber) {
+		this.endNumber = endNumber;
+	}
+	public Integer getDiscussionId() {
+		return DiscussionId;
+	}
+	public void setDiscussionId(Integer discussionId) {
+		DiscussionId = discussionId;
+	}
+	public String getOrganizationId() {
+		return OrganizationId;
+	}
+	public void setOrganizationId(String organizationId) {
+		OrganizationId = organizationId;
+	}
+	public String getContent() {
+		return Content;
+	}
+	public void setContent(String content) {
+		Content = content;
+	}
+	public Integer getDeleteFlg() {
+		return DeleteFlg;
+	}
+	public void setDeleteFlg(Integer deleteFlg) {
+		DeleteFlg = deleteFlg;
+	}
+	public Integer getSources() {
+		return Sources;
+	}
+	public void setSources(Integer sources) {
+		Sources = sources;
+	}
+	public Integer getLevel() {
+		return Level;
+	}
+	public void setLevel(Integer level) {
+		Level = level;
+	}
+	public String getSubject() {
+		return Subject;
+	}
+	public void setSubject(String subject) {
+		Subject = subject;
+	}
+	public Date getCreationTime() {
+		return CreationTime;
+	}
+	public void setCreationTime(Date creationTime) {
+		CreationTime = creationTime;
+	}
+	public String getCreatedBy() {
+		return CreatedBy;
+	}
+	public void setCreatedBy(String createdBy) {
+		CreatedBy = createdBy;
+	}
+	public Date getLastUpdateTime() {
+		return LastUpdateTime;
+	}
+	public void setLastUpdateTime(Date lastUpdateTime) {
+		LastUpdateTime = lastUpdateTime;
+	}
+	public String getLastUpdatedBy() {
+		return LastUpdatedBy;
+	}
+	public void setLastUpdatedBy(String lastUpdatedBy) {
+		LastUpdatedBy = lastUpdatedBy;
+	}
+	
+}

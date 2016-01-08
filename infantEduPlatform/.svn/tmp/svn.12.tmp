@@ -1,0 +1,60 @@
+package com.xunyun.infanteduplatform.persistent;
+
+import java.util.List;
+import java.util.Map;
+
+import com.xunyun.infanteduplatform.domain.SysUserInDepartment;
+import com.xunyun.infanteduplatform.domain.SysUserInfo;
+import com.xunyun.infanteduplatform.domain.SysUserInorg;
+import com.xunyun.infanteduplatform.domain.SysUserLogin;
+import com.xunyun.infanteduplatform.domain.TeacherInClassEntity;
+import com.xunyun.infanteduplatform.domain.UserInClassEntity;
+import org.springframework.stereotype.Repository;
+
+@Repository public interface UserMapper {
+
+    SysUserInfo getUserByUsername(String username);
+
+    List<SysUserInorg> queryUserBySId(Map<Object, Object> dataMap);
+
+
+    List<SysUserInfo> queryUserByCId(Integer treeId);
+
+    List<SysUserInfo> queryStuByCId(Integer treeId);
+
+    List<SysUserInfo> queryUserByDId(Integer treeId);
+
+    Integer delUserById(Integer userId);
+
+    Integer delUOrgById(Integer userId);
+
+    Integer delUClassById(Integer userId);
+
+    Integer delTClassById(Integer userId);
+
+    Integer delUDepbyId(Integer userId);
+
+    Integer delLogById(Integer userId);
+
+    SysUserInfo findUserById(Integer userId);
+
+    Integer updateUser(SysUserInfo sInfo);
+
+    Integer saveUserInfo(SysUserInfo userinfo);
+
+    Integer saveUserLog(SysUserLogin loginUser);
+
+    Integer saveUOrg(SysUserInorg userInorg);
+
+    Integer saveUClass(UserInClassEntity stu);
+
+    Integer saveTClass(TeacherInClassEntity teach);
+
+    Integer saveUDep(SysUserInDepartment dept);
+
+    Integer updateUserInfo(SysUserInfo userinfo);
+
+    Integer updateLogUser(SysUserLogin loginUser);
+
+    SysUserLogin findPwdById(Integer userId);
+}

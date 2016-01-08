@@ -1,0 +1,68 @@
+package com.xunyun.infanteduplatform.controller.register;
+
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.xunyun.infanteduplatform.domain.SysUserInfo;
+import com.xunyun.infanteduplatform.domain.SysUserInorg;
+import com.xunyun.infanteduplatform.domain.SysUserLogin;
+import com.xunyun.infanteduplatform.service.RegisterService;
+import com.xunyun.infanteduplatform.utils.MD5Util;
+
+@Controller
+@RequestMapping("register")
+public class RegisterController {
+
+  @Resource
+  private RegisterService registerService;
+
+  // 页面跳转
+  @RequestMapping("/show")
+  public ModelAndView updatedepartment() {
+
+    return new ModelAndView("pages/register/register");
+  }
+
+  // 注册查重
+  @ResponseBody
+  @RequestMapping("/updateValidate")
+  public int updateValidate(String name, String mobile) {
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("name", name.toLowerCase());
+    map.put("mobile", mobile);
+    return registerService.updateValidate(map);
+  }
+
+  // 用户注册
+  @ResponseBody
+  @RequestMapping("/register")
+  public int register(SysUserLogin userRegister) {
+    int count=0;
+    userRegister.setName(userRegister.getName().toLowerCase());
+    userRegister.setPassword(MD5Util.MD5(userRegister.getPassword()));
+    count=registerService.register(userRegister);
+    SysUserInfo userInfo = new SysUserInfo();
+    userInfo.setUserid(userRegister.getId());
+    userInfo.setUsername("jeff");
+    userInfo.setDeleteflg(0);
+    userInfo.setCreationtime(Calendar.getInstance().getTime());
+    userInfo.setCreatedby("jeff");
+    userInfo.setLastupdatetime(Calendar.getInstance().getTime());
+    userInfo.setLastupdatedby("jeff");  
+    SysUserInorg userInorg = new SysUserInorg();
+    userInorg.setUserId(userRegister.getId());
+    userInorg.setUserType(0);
+    userInorg.setIsAdmin(0);  
+    count=registerService.register(userInfo,userInorg);
+    return count;
+  }
+
+}

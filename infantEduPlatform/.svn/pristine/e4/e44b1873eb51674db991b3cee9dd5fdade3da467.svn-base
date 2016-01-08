@@ -1,0 +1,133 @@
+package com.xunyun.infanteduplatform.controller.codemaster;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.xunyun.infanteduplatform.domain.SysCodeMaster;
+import com.xunyun.infanteduplatform.service.CodeMasterService;
+
+@Controller @RequestMapping("codeMaster") public class CodeMasterController {
+
+    @Autowired private CodeMasterService codeMasterService;
+
+    /**
+     * @author lpp 方法描述：数据字典初始加载查询
+     */
+    @RequestMapping(value = "/queryCodeMasterInfo") @ResponseBody
+    public Map<Object, Object> queryCodeMasterInfo(
+        @RequestParam(value = "search[value]", required = false) String keyValue,
+        @RequestParam(value = "draw", required = false) Integer draw,
+        @RequestParam(value = "start", required = false) Integer start,
+        @RequestParam(value = "length", required = false) Integer length) {
+
+        // 开始条数
+        int startNumber = start + 1;
+        // 结束条数
+        int endNumber = start + length;
+        // 总数目
+        int countNumber = 0;
+
+        // 声明对象
+        SysCodeMaster item = new SysCodeMaster();
+        // 查询条件
+        item.setKeyValue(keyValue);
+        // 开始条数
+        item.setStartNumber(startNumber);
+        // 结束条数
+        item.setEndNumber(endNumber);
+
+        // 获取数据
+        List<SysCodeMaster> listData = codeMasterService.queryCodeMasterInfoPage(item);
+        // 数据不为空，取总数
+        if (listData != null && listData.size() > 0) {
+            countNumber = listData.get(0).getCountNumber();
+        }
+
+        // 返回对象
+        Map<Object, Object> info = new HashMap<Object, Object>();
+        // 数据列表
+        info.put("data", listData);
+        // 总条数
+        info.put("recordsTotal", countNumber);
+        // 过滤条数
+        info.put("recordsFiltered", countNumber);
+        // 当前页数
+        info.put("draw", draw);
+
+        return info;
+    }
+
+    /**
+     * @author lpp 方法描述：数据字典添加数据
+     */
+    @RequestMapping(value = "/saveCodeMaster", method = RequestMethod.POST) @ResponseBody
+    public int addCodeMaster(@ModelAttribute(value = "sysCodeMaster") SysCodeMaster sysCodeMaster) {
+        int status = codeMasterService.saveCodeMaster(sysCodeMaster);
+        return status;
+    }
+
+    /**
+     * @author lpp 方法描述：数据字典添加数据查重验证
+     */
+    @RequestMapping(value = "/querySaveRepeat") @ResponseBody public SysCodeMaster queryAddRepeat(
+        @ModelAttribute(value = "sysCodeMaster") SysCodeMaster sysCodeMaster) {
+        SysCodeMaster status = codeMasterService.querySaveRepeat(sysCodeMaster);
+
+        return status;
+
+    }
+
+    /**
+     * @author lpp 方法描述：数据字典修改数据
+     */
+    @RequestMapping(value = "/updateCodeMaster") @ResponseBody public int updateCodeMaster(
+        @ModelAttribute(value = "sysCodeMaster") SysCodeMaster sysCodeMaster) {
+        int status = codeMasterService.updateCodeMaster(sysCodeMaster);
+        return status;
+    }
+
+    /**
+     * @author lpp 方法描述：数据字典逻辑删除
+     */
+    @RequestMapping(value = "/deleteCodeMaster", method = RequestMethod.POST) @ResponseBody
+    public int deleteCodeMaster(
+        @ModelAttribute(value = "sysCodeMaster") SysCodeMaster sysCodeMaster) {
+        int status = codeMasterService.deleteCodeMaster(sysCodeMaster);
+        return status;
+    }
+
+    @RequestMapping(value = "queryCodeMaster", method = RequestMethod.POST) @ResponseBody
+    public List<SysCodeMaster> queryCodeMaster(
+        @ModelAttribute(value = "sysCodeMaster") SysCodeMaster sysCodeMaster) {
+        return codeMasterService.queryCodeMasterList(sysCodeMaster);
+    }
+   
+    /**
+     * 查重
+     */
+    /* @RequestMapping(value = "queryCoderMasterRepeat ", method = RequestMethod.POST) 
+     @ResponseBody
+     public String queryBureau(@ModelAttribute(value = "sysCodeMaster") SysCodeMaster sysCodeMaster) {
+        Integer counts = this.codeMasterService.queryCoderMasterRepeat(sysCodeMaster);
+        String message;
+        if (counts > 0 && bureauInfo.getBureauName() != null && !""
+            .equals(bureauInfo.getBureauName())) {
+            message = "此单位下单位名称重复!";
+        } else if (counts > 0 && bureauInfo.getOrganizationCode() != null) {
+            message = "单位机构代码重复!";
+        } else {
+            message = "true";
+        }
+        return message;
+    }*/
+    
+}

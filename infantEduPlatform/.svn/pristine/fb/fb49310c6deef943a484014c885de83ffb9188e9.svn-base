@@ -1,0 +1,42 @@
+package com.xunyun.infanteduplatform.persistent;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Repository;
+
+import com.xunyun.infanteduplatform.domain.AppInfo;
+import com.xunyun.infanteduplatform.domain.interaction.SelectDynamic;
+import com.xunyun.infanteduplatform.domain.interaction.Bulletin;
+
+@Repository
+public interface BulletinMapper {
+  // 公告列表获取
+  List<Bulletin> queryBulletinList(Bulletin bulletin);
+
+  // 公告信息查询
+  Bulletin queryByBulletinId(Integer bulletinId);
+
+  // 公告信息保存
+  Integer addBulletinInfo(Bulletin bulletin);
+
+  // 班级动态列表
+  List<SelectDynamic> queryBulletinPage(Bulletin bulletin);
+
+  int deleteAppInfo(int id);
+
+  int updateAppInfo(AppInfo appInfo);
+
+  int updateList(Map<String, Object> map);
+
+  int closeList(Map<String, Object> map);
+
+  int deleteList(Map<String, Object> map);
+
+  int updateValidate(AppInfo appInfo);
+
+  int insertMessage(Bulletin bulletin);
+
+  SelectDynamic queryDetail(Bulletin bulletin);
+
+}

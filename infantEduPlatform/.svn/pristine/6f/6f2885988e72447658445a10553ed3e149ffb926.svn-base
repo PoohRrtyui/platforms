@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.UserMapper">
+	<!-- 根据schoolId查询用户 -->
+	<select id="queryUserBySId" parameterType="Integer" resultType="com.xunyun.infanteduplatform.domain.SysUserInfo">
+		<!--select * from userinfo u,userinorg uo where u.userid=uo.userid and uo.organizationid=#{schoolId} and uo.organizationtype=1 and u.deleteflg=0-->
+		select * from userinorg uo left join userinfo u on u.userid=uo.userid left join teacherinclass tc on uo.userid= tc.userid left join userinclass uc on uo.userid= uc.userid left join userindept up on up.userid=uo.userid where
+		<if test="treeId != null">
+		uo.organizationid=#{schoolId} and uo.organizationtype=1 and u.deleteflg=0
+		</if>
+	</select>
+
+	<!-- 根据ClassId(TreeId)查询教师用户-->
+	<select id="queryUserByCId" parameterType="Integer" resultType="com.xunyun.infanteduplatform.domain.SysUserInfo">
+		select * from userinfo u ,teacherinclass tc , userinorg uo where u.userid=tc.userid  and u.userid = uo.userid and tc.classId=#{treeId} and u.deleteflg=0
+	</select>
+
+	<!-- 根据ClassId(TreeId)查询学生用户-->
+	<select id="queryStuByCId" parameterType="Integer" resultType="com.xunyun.infanteduplatform.domain.SysUserInfo">
+		select * from userinfo u ,userinclass tc , userinorg uo where u.userid=tc.userid  and u.userid = uo.userid and tc.classId=#{treeId} and u.deleteflg=0
+	</select>
+	
+	<!-- 根据departmentId(TreeId)查询用户-->
+	<select id="queryUserByDId" parameterType="Integer" resultType="com.xunyun.infanteduplatform.domain.SysUserInfo">
+		select * from userinfo u inner join userindept ut on u.userid=ut.userid where ut.departmentid=#{treeId} and u.deleteflg=0
+	</select>
+	
+	<!--用户逻辑删除-->
+	<update id="delUserById" parameterType="Integer">
+		update userinfo set deleteFlg = 1 where userid = #{userId}
+	</update>
+	
+	<!--登录表逻辑删除-->
+	<update id="delLogById" parameterType="Integer">
+		update userlogin set deleteFlg = 1 where userid = #{userId}
+	</update>
+	
+	<!--用户机构关联逻辑删除-->
+	<update id="delUOrgById" parameterType="Integer">
+		update userinorg uo set uo.organizationid = '' , uo.organizationtype = '' , uo.usertype = 0 where userid = #{userId}
+	</update>
+	
+	<!--用户班级表删除-->
+	<delete id="delUClassById" parameterType="Integer">
+		delete userinclass where userid = #{userId}
+	</delete>
+	
+	<!--教师班级表删除-->
+	<delete id="delTClassById" parameterType="Integer">
+		delete teacherinclass where userid = #{userId}
+	</delete>
+	
+	<!--用户部门表删除-->
+	<delete id="delUDepbyId" parameterType="Integer">
+		delete userindept where userid = #{userId}
+	</delete>
+	
+	<!--查询用户信息-->
+	<select id="findUserById" parameterType="Integer" resultType="com.xunyun.infanteduplatform.domain.SysUserInfo">
+		select * from userinfo where userid = #{userId}
+	</select>
+	
+	<update id="updateUser" parameterType="com.xunyun.infanteduplatform.domain.SysUserInfo">
+	      update userinfo set photourl = #{photourl} where userid = #{userid}
+	</update>
+	
+</mapper>

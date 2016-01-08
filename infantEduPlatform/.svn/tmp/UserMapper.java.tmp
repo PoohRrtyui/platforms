@@ -1,0 +1,85 @@
+package com.xunyun.infanteduplatform.persistent;
+
+import java.util.List;
+import java.util.Map;
+
+import com.xunyun.infanteduplatform.domain.SysUserInDepartment;
+import com.xunyun.infanteduplatform.domain.SysUserInfo;
+import com.xunyun.infanteduplatform.domain.SysUserInorg;
+import com.xunyun.infanteduplatform.domain.SysUserLogin;
+import com.xunyun.infanteduplatform.domain.TeacherInClassEntity;
+import com.xunyun.infanteduplatform.domain.UserInClassEntity;
+<<<<<<< .mine
+import org.springframework.stereotype.Repository;
+
+@Repository public interface UserMapper {
+
+    SysUserInfo getUserByUsername(String username);
+
+    List<SysUserInorg> queryUserBySId(Map<Object, Object> dataMap);
+
+=======
+import com.xunyun.infanteduplatform.domain.interaction.UserInfo;
+>>>>>>> .r411
+
+    List<SysUserInfo> queryUserByCId(Integer treeId);
+
+    List<SysUserInfo> queryStuByCId(Integer treeId);
+
+    List<SysUserInfo> queryUserByDId(Integer treeId);
+
+    Integer delUserById(Integer userId);
+
+    Integer delUOrgById(Integer userId);
+
+    Integer delUClassById(Integer userId);
+
+    Integer delTClassById(Integer userId);
+
+    Integer delUDepbyId(Integer userId);
+
+    Integer delLogById(Integer userId);
+
+    SysUserInfo findUserById(Integer userId);
+
+    Integer updateUser(SysUserInfo sInfo);
+
+    Integer saveUserInfo(SysUserInfo userinfo);
+
+    Integer saveUserLog(SysUserLogin loginUser);
+
+    Integer saveUOrg(SysUserInorg userInorg);
+
+    Integer saveUClass(UserInClassEntity stu);
+
+    Integer saveTClass(TeacherInClassEntity teach);
+
+    Integer saveUDep(SysUserInDepartment dept);
+
+    Integer updateUserInfo(SysUserInfo userinfo);
+
+    Integer updateLogUser(SysUserLogin loginUser);
+
+    SysUserLogin findPwdById(Integer userId);
+
+  public Integer updateAdmin(Map<String, Object> map);
+
+  public Integer closeAdmin(Map<String, Object> map);
+
+  public Integer updateStudent(Map<String, Object> map);
+
+  public Integer updateTeacher(Map<String, Object> map);
+
+  public Integer updateDept(Map<String, Object> map);
+  
+  public UserInfo searchById(Integer userId);
+
+  public int updateLoginMobile(Map<String, Object> map);
+
+  public int updateUserInfoMobile(Map<String, Object> map);
+
+  public Integer updateUserinfo(Map<String, Object> map);
+
+  public Integer updateImage(Map<String, Object> map);
+
+}

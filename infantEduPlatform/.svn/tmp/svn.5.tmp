@@ -1,0 +1,117 @@
+package com.xunyun.infanteduplatform.controller.pages;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import com.xunyun.infanteduplatform.domain.LoginUserInfo;
+import com.xunyun.infanteduplatform.domain.SchoolInfo;
+import com.xunyun.infanteduplatform.service.SchoolService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+/**
+ * 页面controller
+ * Created by PoohD on 2015/11/27.
+ */
+@Controller @RequestMapping("page") public class PagesController {
+
+    @Autowired private SchoolService schoolService;
+
+    @RequestMapping("/data") public ModelAndView layout() {
+        return new ModelAndView("pages/dataTables");
+    }
+
+    /**
+     * 单位信息列表页面
+     *
+     * @return ModelAndView
+     */
+    @RequestMapping("/bureau") public ModelAndView bureau() {
+        return new ModelAndView("pages/bureau/bureauInfo");
+    }
+
+    /**
+     * 单位操作页面
+     *
+     * @return ModelAndView
+     */
+    @RequestMapping("/bureauOp") public ModelAndView bureauOperation(
+        @RequestParam(value = "bureauId", required = false) Long BureauId) {
+        ModelAndView mav = new ModelAndView("pages/bureau/bureauOp");
+        mav.addObject("BureauId", BureauId);
+        return mav;
+    }
+
+    /**
+     * 学校操作
+     *
+     * @return ModelAndView
+     */
+    @RequestMapping("/schoolOp") public ModelAndView schoolOperation(
+        @RequestParam(value = "schoolId", required = false) Integer schoolId) {
+        ModelAndView mav = new ModelAndView("pages/school/schoolOp");
+        mav.addObject("schoolId", schoolId);
+        return mav;
+    }
+
+    @RequestMapping("/classmanage") public ModelAndView skipQueryClass() {
+        return new ModelAndView("pages/classmanage/classManage");
+    }
+
+
+    @RequestMapping("/passwordmanage") public ModelAndView changepwd() {
+        return new ModelAndView("pages/passwordmanage/changepwd");
+    }
+
+    /*数据字典页面跳转*/
+    @RequestMapping("/codemaster") public ModelAndView codeMasterView() {
+        return new ModelAndView("pages/codeMaster/codeMaster");
+    }
+
+    /*头像上传页面跳转*/
+    @RequestMapping("/headImage") public ModelAndView headImage(HttpServletRequest request) {
+        ModelAndView mView = new ModelAndView("pages/headimage/headimage");
+        String scheme = request.getScheme();
+        String serverName = request.getServerName();
+        int serverPort = request.getServerPort();
+        String contextPath = request.getContextPath();
+        String resourcePath = "/static/images/";
+        String loadPath =
+            scheme + "://" + serverName + ":" + serverPort + contextPath + resourcePath
+                .replaceAll("\\|", "/");
+        mView.addObject("pic1", loadPath + "180x180.jpg");
+        mView.addObject("pic2", loadPath + "128x128.jpg");
+        mView.addObject("pic3", loadPath + "64x64.jpg");
+        mView.addObject("imgFile", loadPath + "180x180.jpg");
+        return mView;
+    }
+
+    /**
+     * 绑定用户信息
+     * @return 绑定用户页面
+     */
+    @RequestMapping("/bindUserInfo")public ModelAndView bindUserInfo(){
+        return new ModelAndView("pages/binduserinfo/bindUserInfo");
+    }
+
+    /**
+     * 显示学校信息页面
+     * @return view (pages/school/SchoolInfo)
+     */
+    @RequestMapping("/schoolInfo")public ModelAndView schoolInfo(
+        HttpServletRequest request  ){
+        HttpSession session = request.getSession();
+        LoginUserInfo loginUserInfo = (LoginUserInfo) session.getAttribute("loginUserInfo");
+        Integer orgId = loginUserInfo.getOrganizationid();
+        SchoolInfo school = new SchoolInfo();
+        school.setSchoolId(orgId);
+        SchoolInfo schoolInfo = this.schoolService.querySchool(school);
+        ModelAndView modelAndView = new ModelAndView("pages/school/SchoolInfo");
+        modelAndView.addObject(schoolInfo);
+        return modelAndView;
+    }
+}
+

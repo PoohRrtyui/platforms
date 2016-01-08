@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.LoginMapper">
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache" /> -->
+	<resultMap type="com.xunyun.infanteduplatform.domain.SysUserLogin" id="loginEntityResultMap">
+		<result column="userId" property="id" jdbcType="NUMERIC"/>
+		<result column="name" property="name" jdbcType="VARCHAR"/>
+		<result column="password" property="password" jdbcType="VARCHAR"/>
+		<result column="passwordkey" property="passwordkey" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	<!-- 登陆验证 -->
+	<select id="entry" resultType="Integer">
+	      select userId from ib_USERLOGIN where NAME=#{name} and PASSWORD=#{password}
+	</select>
+</mapper>

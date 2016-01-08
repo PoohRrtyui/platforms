@@ -1,0 +1,65 @@
+package com.xunyun.infanteduplatform.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.xunyun.infanteduplatform.domain.interaction.Collect;
+import com.xunyun.infanteduplatform.domain.interaction.Discussion;
+import com.xunyun.infanteduplatform.domain.interaction.DiscussionReplay;
+import com.xunyun.infanteduplatform.domain.interaction.Dynamic;
+import com.xunyun.infanteduplatform.persistent.CollectMapper;
+import com.xunyun.infanteduplatform.persistent.DiscussionInfoMapper;
+import com.xunyun.infanteduplatform.persistent.DiscussionReplayMapper;
+import com.xunyun.infanteduplatform.persistent.DynamicMapper;
+
+@Service("discussionInfoService")
+public class DiscussionInfoService {
+	 @Autowired
+	 private DiscussionInfoMapper discussionInfoMapper;
+	 
+	 @Autowired
+	 private DiscussionReplayMapper discussionReplayMapper;
+	 
+	 @Autowired
+	 private CollectMapper collectMapper;
+	 
+	 @Autowired
+	 private DynamicMapper dynamicMapper;
+	 
+	 /*交流信息查询*/ 
+	 public List<Discussion> queryDiscussionInfo(Discussion discussion){
+	    return this.discussionInfoMapper.queryDiscussionInfo(discussion);
+	 }
+	 
+	 /*通过交流id获取点赞用户的头像*/ 
+	 public List<Dynamic> queryDynamicInfo(Dynamic dynamic){
+		return this.dynamicMapper.queryPhotoList(dynamic);
+	 }
+	 
+	 /*收藏信息查重*/
+	 public Integer collectValidate(Collect collect){
+		 return this.collectMapper.collectValidate(collect);
+	 }
+	 
+	/* 交流信息收藏*/
+	 public int collectSubjects(Collect collect){
+			return this.collectMapper.collectSubjects(collect);
+	 }
+	 
+	/* 交流信息保存*/
+	 public int publishMessage(Discussion discussion){
+			return this.discussionInfoMapper.publishMessage(discussion);
+	 }
+	 
+	 /*我的社区（该用户发表的交流信息）*/ 
+	 public List<Discussion> mypublishCollect(Discussion discussion){
+	    return this.discussionInfoMapper.mypublishCollect(discussion);
+	 }
+	 
+	 /*我的社区（该用户评论的信息）*/ 
+	 public List<DiscussionReplay> myCommentCollect(DiscussionReplay discussionReplay){
+	    return this.discussionReplayMapper.myCommentCollect(discussionReplay);
+	 }
+}

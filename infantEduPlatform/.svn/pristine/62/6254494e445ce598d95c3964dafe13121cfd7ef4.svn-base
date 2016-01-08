@@ -1,0 +1,23 @@
+package com.xunyun.infanteduplatform.domain.interaction;
+
+import java.sql.Blob;
+
+public class DynamicModel {
+		//用户Id
+		private Integer UserId;
+		//点赞用户头像
+		private  Blob dynamicPhotoUrl;
+		public Integer getUserId() {
+			return UserId;
+		}
+		public void setUserId(Integer userId) {
+			UserId = userId;
+		}
+		public Blob getDynamicPhotoUrl() {
+			return dynamicPhotoUrl;
+		}
+		public void setDynamicPhotoUrl(Blob dynamicPhotoUrl) {
+			this.dynamicPhotoUrl = dynamicPhotoUrl;
+		}
+		
+}

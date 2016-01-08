@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.BulletinMapper">
+	
+	<!-- 查询图片信息 -->
+	<select id="queryImageList"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.ImageRelation"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.Image">
+		<![CDATA[
+			SELECT
+			    a.moduleId,
+				b.imageContent
+				FROM II_ImageRelation a
+				LEFT JOIN II_Image b ON a.imageId= b.imageId
+				WHERE a.moduleId = #{moduleId}
+		]]>
+	</select>
+	
+	<!-- 图片信息保存 -->
+	<insert id="addImageList" useGeneratedKeys="true"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.Image">
+		<selectKey resultType="Integer" order="BEFORE" keyProperty="imageId">
+			select SEQ_II_IMAGE.nextval from dual
+		</selectKey>
+		INSERT INTO II_Image a(
+		imageId,
+		organizationId,
+		imageName,
+		imageSize,
+		extension,
+		imageContent,
+		creationTime,
+		createdBy,
+		lastUpdateTime,
+		lastUpdatedBy
+		)VALUES(SEQ_II_IMAGE.NEXTVAL,
+		#{organizationId},
+		#{imageName},
+		#{imageSize},
+		#{extension},
+		#{imageContent},
+		#{creationTime},
+		#{createdBy},
+		#{lastUpdateTime},
+		#{lastUpdatedBy}
+		)
+	</insert>
+	
+		<!-- 查询动态图片列表 -->
+	<select id="queryPictureList" parameterType="Integer" resultType="com.xunyun.infanteduplatform.domain.interaction.Image" >
+			select * from II_ImageRelation ir 
+				left join II_Image im on im.ImageId = ir.ImageId
+			where ir.moduleId = #{bulletinid } 
+		</select>
+</mapper>

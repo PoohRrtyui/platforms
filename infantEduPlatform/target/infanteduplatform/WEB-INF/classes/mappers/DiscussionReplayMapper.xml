@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.DiscussionReplayMapper">
+	<!-- 我的社区（该用户评论的信息）（自用） -->
+	<select id="myCommentCollect"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.DiscussionReplay"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.DiscussionReplay">
+		<![CDATA[
+			SELECT b.*FROM (
+			SELECT a.*
+			,rownum AS rownumber 
+			FROM (select 
+			c.replayId,
+			c.replayContent,
+			c.userId,
+			d.name as replayName,
+			c.replayTime,
+			count(*) over() dataCount
+			from II_DiscussionReplay c
+			left join IB_userInfo d ON c.userId=d.userId
+			where c.userId=#{userId jdbcType=INTEGER} 
+			ORDER BY c.replayTime
+				) a WHERE rownum <= #{endNumber jdbcType=INTEGER} 	
+			) b	WHERE b.rownumber >= #{startNumber jdbcType=INTEGER} 
+		]]>
+	</select>
+
+	<!-- 我的社区（该用户评论的信息） -->
+	<select id="selectMyCommentCollect"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.DiscussionReplay"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.DiscussionReplay">
+		<![CDATA[
+			SELECT a.*
+			,rownum AS rownumber 
+			FROM (select 
+			c.replayId,
+			c.replayContent,
+			c.userId,
+			d.name as replayName,
+			c.replayTime
+			from II_DiscussionReplay c
+			left join IB_userInfo d ON c.userId=d.userId
+			where c.userId=#{userId jdbcType=INTEGER} 
+			]]>
+		<if test="replayId > 0">
+			<if test="direction == 1">
+				<![CDATA[ 
+	                AND c.replayId > #{replayId} 
+	           ]]>
+			</if>
+			<if test="direction == 0">
+				<![CDATA[ 
+	                AND c.replayId < #{replayId} 
+	           ]]>
+			</if>
+		</if>
+			<![CDATA[
+			ORDER BY c.replayId desc
+				) a WHERE rownum <= #{count jdbcType=INTEGER} 	
+		]]>
+	</select>
+
+	<!-- 交流信息回复 -->
+	<insert id="replyExchange"
+		parameterType="com.xunyun.infanteduplatform.domain.interaction.DiscussionReplay">
+		<![CDATA[
+			insert into II_DiscussionReplay (
+			replayId,
+			moduleId,
+			targetId,
+			userId,
+			replayContent,
+			replayTime
+			)
+			values(
+			SEQ_discussionreply.nextval,
+			#{moduleId jdbcType=INTEGER},
+			#{targetId jdbcType=INTEGER},
+			#{userId jdbcType=INTEGER},
+			#{replayContent jdbcType=VARCHAR},
+			#{replayTime jdbcType=DATE}
+			)
+		]]>
+	</insert>
+
+	<!-- 获取该交流信息下的评论内容和时间 -->
+	<select id="querydiscussionReplay" parameterType="Integer"
+		resultType="com.xunyun.infanteduplatform.domain.interaction.DiscussionReplay">
+		<![CDATA[
+			select
+			a.replayId, 
+			a.replayContent,
+			a.replayTime,
+			a.moduleId,
+			b.name As replyName
+			from II_DiscussionReplay a
+			left join IB_userInfo b ON a.userId=b.userId
+		 where a.moduleId = #{moduleId} 
+		]]>
+	</select>
+</mapper>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.DepartmentInfoMapper">
+    <!--查询部门详情信息-->
+    <select id="findById" parameterType="int"
+            resultType="com.xunyun.infanteduplatform.domain.SysDepartmentInfo">
+        select DEPARTMENTNAME,DUTYPERSON,DESCRIPTION,TELEPHONE,orderNo,fax,email from
+        ib_departmentinfo where departmentid=#{id}
+    </select>
+    <!--增加、修改查重-->
+    <select id="updateValidate" parameterType="com.xunyun.infanteduplatform.domain.TreeEntity"
+            resultType="int">
+        select count(*) from ib_departmentrelation a,ib_departmentinfo b where
+        b.DEPARTMENTID=a.DEPARTMENTID and a.PARENTDEPARTMENTID=#{pId} and b.DEPARTMENTNAME=#{name}
+        and a.BUREAUID=#{userid}
+        <if test="name != null and name != ''">
+            and a.DEPARTMENTID!=#{id}
+        </if>
+    </select>
+    <!--删除部门信息-->
+    <update id="deleteDepartmentInfo" parameterType="int">
+        update ib_departmentinfo set DELETEFLG=1 where DEPARTMENTID=#{id}
+    </update>
+    <!--修改部门信息-->
+    <update id="updateDepartmentInfo"
+            parameterType="com.xunyun.infanteduplatform.domain.SysDepartmentInfo">
+        update ib_departmentinfo set
+        DEPARTMENTNAME=#{DepartmentName},orderNo=#{orderNo},fax=#{fax},email=#{email},
+        DUTYPERSON=#{DutyPerson},TELEPHONE=#{Telephone},DESCRIPTION=#{Description}
+        where DEPARTMENTID=#{DepartmentId}
+    </update>
+    <!--修改节点状态-->
+    <update id="update" parameterType="int">
+        update ib_departmentrelation set ISCHILD=0 where DEPARTMENTID=#{pId}
+    </update>
+    <!--增加时修改节点状态  -->
+    <update id="updatePid" parameterType="int">
+        update ib_departmentrelation set ISCHILD=1 where DEPARTMENTID=#{id}
+    </update>
+    <!--刷新树节点-->
+    <select id="findCound" parameterType="int" resultType="int">
+        select count(*) from ib_departmentrelation a,ib_departmentinfo b where
+        PARENTDEPARTMENTID=#{pId}
+        and DeleteFlg=0 and a.DEPARTMENTID=b.DEPARTMENTID
+    </select>
+    <!--查询部门是否被用户使用中-->
+    <select id="selectCount" parameterType="int" resultType="int">
+        select count(*) from ib_userindept a,ib_departmentinfo b where a.DEPARTMENTID=b.DEPARTMENTID
+        and
+        b.DEPARTMENTID=#{id}
+    </select>
+    <!--增加部门信息-->
+    <insert id="addDepartment"
+            parameterType="com.xunyun.infanteduplatform.domain.SysDepartmentInfo">
+        <selectKey keyProperty="DepartmentId" resultType="Integer" order="BEFORE">
+            select SEQ_DEPARTMENTINFO.nextval from dual
+        </selectKey>
+        insert into ib_departmentinfo
+        (DepartmentId,DepartmentName,DutyPerson,Telephone,Fax,Email,OrderNo,DeleteFlg,
+        CreationTime,CreatedBy,LastUpdateTime,LastUpdatedBy,Description)
+        values(#{DepartmentId},#{DepartmentName},#{DutyPerson},#{Telephone,jdbcType=VARCHAR},#{Fax,jdbcType=VARCHAR},#{Email,jdbcType=VARCHAR},
+        #{OrderNo,jdbcType=INTEGER},#{DeleteFlg},#{CreationTime},#{CreatedBy},#{LastUpdateTime},#{LastUpdatedBy},
+        #{Description,jdbcType=VARCHAR})
+    </insert>
+
+    <select id="queryDeptBySchoolId" parameterType="com.xunyun.infanteduplatform.domain.SysDepartmentInfo"
+            resultType="com.xunyun.infanteduplatform.domain.SysDepartmentInfo">
+        SELECT *
+        FROM ib_departmentInfo id
+        LEFT JOIN ib_departmentRelation idr
+        ON id.departmentId = idr.departmentId
+        WHERE idr.bureauId = #{bureauId}
+        AND id.deleteFlg = 0
+    </select>
+
+ <!--修改isChild属性-->
+    <select id="updateDeptIsChild" statementType="CALLABLE">
+        <![CDATA[
+            {call p_dept_update_pid (#{parentDeptId,mode=IN,jdbcType=INTEGER})}
+        ]]>
+    </select>
+
+</mapper>
+
+

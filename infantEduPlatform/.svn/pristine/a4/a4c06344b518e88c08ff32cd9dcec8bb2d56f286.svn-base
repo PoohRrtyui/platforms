@@ -1,0 +1,373 @@
+package com.xunyun.infanteduplatform.controller.interaction.Dynamic;
+
+import java.sql.Blob;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.xunyun.infanteduplatform.domain.SysBulletin;
+import com.xunyun.infanteduplatform.domain.SysImage;
+import com.xunyun.infanteduplatform.domain.SysImageRelation;
+import com.xunyun.infanteduplatform.domain.SysUserInfo;
+import com.xunyun.infanteduplatform.domain.interaction.Dynamic;
+import com.xunyun.infanteduplatform.domain.interaction.Replay;
+import com.xunyun.infanteduplatform.domain.interaction.SelectDynamic;
+import com.xunyun.infanteduplatform.service.AppInfoService;
+import com.xunyun.infanteduplatform.service.BulletinService;
+
+@Controller
+@RequestMapping("dynamic")
+public class ClassDynamicController {
+
+  @Autowired
+  private BulletinService bulletinService;
+
+  @Autowired
+  private AppInfoService appInfoService;
+
+  /**
+   * 查询班级动态列表
+   * 
+   * @param organizationId
+   * @param appCode
+   * @param classId
+   * @param pageIndex
+   * @param pageSize
+   * @return
+   * @throws ParseException
+   */
+  @ResponseBody
+  @RequestMapping("/queryMessageList")
+  public Map<String, Object> queryMessageList(Integer organizationId, String appCode,
+      Integer classId, @RequestParam(defaultValue = "1") Integer pageIndex, @RequestParam(
+          defaultValue = "10") Integer pageSize) throws ParseException {
+
+    HashMap<String, Object> map = new HashMap<String, Object>();
+
+    if (appCode == null) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码为空，查询失败!");
+      map.put("data", "");
+    } else if (!appInfoService.findByAppCode(appCode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码未开启，查询失败!");
+      map.put("data", "");
+    } else if ("".equals(organizationId) || organizationId == null) {
+      map.put("state", "error");
+      map.put("message", "机构代码为空，查询失败!");
+      map.put("data", "");
+    } else if ("".equals(classId) || classId == null) {
+      map.put("state", "error");
+      map.put("message", "classId类型有误!");
+      map.put("data", "");
+    } else {
+
+      // 开始条数
+      Integer startNumber = pageSize * (pageIndex - 1) - 1;// 起始条数
+      // 结束条数
+      Integer endNumber = pageIndex * pageSize;// 终止条数
+      // 总数目
+      int countNumber = 0;
+
+      SysBulletin bulletin = new SysBulletin();
+      bulletin.setClassId(classId);
+      bulletin.setOrganizationId(organizationId);
+      bulletin.setStartNumber(startNumber);
+      bulletin.setEndNumber(endNumber);
+
+      List<SelectDynamic> listData = bulletinService.queryBulletinPage(bulletin);
+      // 数据不为空，取总数
+      if (listData != null && listData.size() > 0) {
+        countNumber = listData.get(0).getDataCount();
+
+        Integer bulletinId;
+        for (SelectDynamic sd : listData) {
+          bulletinId = sd.getBulletinId();
+
+          // 点赞者头像列表
+          Dynamic dynamic = new Dynamic();
+          dynamic.setModuleId(bulletinId);
+          List<SysUserInfo> listPhoto = bulletinService.queryPhotoList(dynamic);
+
+          // 动态图片列表
+          SysImageRelation ir = new SysImageRelation();
+          ir.setModuleId(bulletinId);
+          List<SysImage> listpic = bulletinService.queryPictureList(ir);
+
+          // 回复列表
+          Replay replay = new Replay();
+          replay.setModuleId(bulletinId);
+          List<Replay> listReplay = bulletinService.queryReplayList(replay);
+
+          map.put("listphoto", listPhoto);
+          map.put("listpic", listpic);
+          map.put("listReplay", listReplay);
+        }
+      }
+      // 页数
+      int pageCount = (int) Math.ceil((double) countNumber / pageSize);
+
+      // 总条数
+      map.put("dataCount", countNumber);
+      map.put("pageCount", pageCount);
+      map.put("pageIndex", pageIndex);
+      map.put("pageSize", pageSize);
+      // 数据列表
+      map.put("data", listData);
+    }
+    return map;
+  }
+
+  /**
+   * 插入班级动态
+   * 
+   * @param organizationid
+   * @param appcode
+   * @param userid
+   * @param bulletincontent
+   * @param picturecontent
+   * @return
+   */
+  @ResponseBody
+  @RequestMapping("/insertMessage")
+  public Map<String, Object> insertMessage(Integer organizationid, String appcode, Integer userid,
+      String bulletincontent, String picturecontent) {
+    
+    HashMap<String, Object> map = new HashMap<String, Object>();
+
+    if (appcode == null) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码为空，无权插入班级动态!");
+      map.put("data", "");
+    } else if (!appInfoService.findByAppCode(appcode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码未开启，无权插入班级动态!");
+      map.put("data", "");
+    } else if ("".equals(organizationid) || organizationid == null) {
+      map.put("state", "error");
+      map.put("message", "机构代码参数错误!");
+      map.put("data", "");
+    } else if ("".equals(bulletincontent) || bulletincontent == null) {
+      map.put("state", "error");
+      map.put("message", "动态内容参数错误!");
+      map.put("data", "");
+    } else if (userid == 0 /* || userid.getClass() */) {
+      map.put("state", "error");
+      map.put("message", "用户id参数错误!");
+      map.put("data", "");
+    } else {
+      SysBulletin bulletin = new SysBulletin();
+      bulletin.setOrganizationId(organizationid);
+      bulletin.setBulletinContent(bulletincontent);
+      bulletin.setCreatedBy(String.valueOf(userid));
+      bulletin.setCreationTime(new Date());
+      bulletin.setBulletinType(3);
+      bulletin.setTitle("");
+      bulletin.setLastUpdatedBy("bb");
+      bulletin.setLastUpdateTime(new Date());
+
+      bulletinService.insertMessage(bulletin);
+      long bulletinId = bulletin.getBulletinId();
+      
+      
+      
+      map.put("state", "success");
+      map.put("message", "插入数据成功!");
+      map.put("data", bulletinId);
+    }
+
+    return map;
+
+  }
+
+  /**
+   * 插入点赞信息
+   * @param appcode
+   * @param userid
+   * @param moduleid
+   * @return
+   */
+  @ResponseBody
+  @RequestMapping("/insertPraise")
+  public Map<String, Object> insertPraise(String appcode, Integer userid, Integer moduleid) {
+
+    HashMap<String, Object> map = new HashMap<String, Object>();
+
+    if (appcode == null) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码为空，无权插入点赞信息!");
+      map.put("data", "");
+    } else if (!appInfoService.findByAppCode(appcode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码未开启，无权插入点赞信息!");
+      map.put("data", "");
+    } else if (userid == 0){
+      map.put("state", "error");
+      map.put("message", "用户id有误!");
+      map.put("data", "");
+    }else if(moduleid == 0){
+      map.put("state", "error");
+      map.put("message", "模块id有误!");
+      map.put("data", "");
+    } else{
+      Dynamic dynamic = new Dynamic();
+      dynamic.setModuleId(moduleid);
+      dynamic.setUserId(userid);
+      int count = bulletinService.queryDynamic(dynamic);
+      
+      if(count != 0){
+        map.put("state", "success");
+        map.put("message", "已点赞成功!");
+        map.put("data", "");
+      }else{
+        dynamic.setPraiseTime(new Date());
+        dynamic.setDynamicType(3);
+        bulletinService.insertDynamic(dynamic);
+        
+        map.put("state", "success");
+        map.put("message", "点赞成功!");
+        map.put("data", dynamic);
+      }
+    }
+    return map;
+  }
+  
+  /**
+   * 插入回复信息
+   * @param appcode
+   * @param userid
+   * @param moduleid
+   * @param targetid
+   * @param content
+   * @return
+   */
+  @ResponseBody
+  @RequestMapping("/insertReply")
+  public Map<String, Object> insertReply(String appcode, Integer userid, Integer moduleid,
+      Integer targetid, String content) {
+
+    HashMap<String, Object> map = new HashMap<String, Object>();
+
+    if (appcode == null) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码为空，无权插入回复信息!");
+      map.put("data", "");
+    } else if (!appInfoService.findByAppCode(appcode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码未开启，无权插入回复信息!");
+      map.put("data", "");
+    } else if (userid == 0){
+      map.put("state", "error");
+      map.put("message", "用户id有误!");
+      map.put("data", "");
+    }else if(moduleid == 0){
+      map.put("state", "error");
+      map.put("message", "模块id有误!");
+      map.put("data", "");
+    } else if(targetid == 0){
+      map.put("state", "error");
+      map.put("message", "回复对象id有误!");
+      map.put("data", "");
+    } else if ("".equals(content) || content == null) {
+      map.put("state", "error");
+      map.put("message", "内容为空，插入数据失败!");
+      map.put("data", "");
+    } else {
+      Replay replay = new Replay();
+      replay.setModuleId(moduleid);
+      replay.setTargetId(targetid);
+      replay.setUserId(userid);
+      replay.setReplayContent(content);
+      replay.setReplayTime(new Date());
+      bulletinService.insertReplay(replay);
+      
+      map.put("state", "success");
+      map.put("message", "回复成功!");
+      map.put("data", replay);
+    }
+    return map;
+  }
+  
+  /**
+   * 查询班级动态详情
+   * @param appcode
+   * @param bulletinid
+   * @return
+   */
+  @ResponseBody
+  @RequestMapping("/queryMessageDetail")
+  public Map<String, Object> queryMessageDetail(String appcode, Integer bulletinid) {
+    
+    HashMap<String, Object> map = new HashMap<String, Object>();
+
+    if (appcode == null) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码为空，无权查询动态详情!");
+      map.put("data", "");
+    } else if (!appInfoService.findByAppCode(appcode)) {
+      map.put("state", "error");
+      map.put("message", "应用系统代码未开启，无权查询动态详情!");
+      map.put("data", "");
+    } else if(bulletinid == 0){
+      map.put("state", "error");
+      map.put("message", "通知公告id有误!");
+      map.put("data", "");
+    } else{
+      SysBulletin bulletin = new SysBulletin();
+      bulletin.setBulletinId(bulletinid);
+      bulletin.setBulletinType(3);
+      //班级动态详情
+      SelectDynamic sd = new SelectDynamic();
+      sd = bulletinService.queryDetail(bulletin);
+      //动态图片列表
+      SysImageRelation ir = new SysImageRelation();
+      ir.setModuleId(bulletinid);
+      List<SysImage> listImages = bulletinService.queryPictureList(ir);
+      List<Blob> listP = new ArrayList<Blob>();
+      for(SysImage a: listImages){
+        if(a.getImageContent() == null){
+          
+        }else{
+          listP.add(a.getImageContent());
+        }
+      }
+      // 点赞者头像列表
+      Dynamic dynamic = new Dynamic();
+      dynamic.setModuleId(bulletinid);
+      List<SysUserInfo> listDynamic = bulletinService.queryPhotoList(dynamic);
+      List<String> listPhoto = new ArrayList<String>();
+      for(SysUserInfo a: listDynamic){
+        listPhoto.add(a.getPhotourl());
+      }
+      // 回复列表
+      Replay replay = new Replay();
+      replay.setModuleId(bulletinid);
+      List<Replay> listReplay = bulletinService.queryReplayList(replay);
+      
+      map.put("bulletinContent", sd.getBulletincontent());
+      map.put("creationTime", sd.getCreationtime());
+      map.put("name", sd.getName());
+      map.put("photourl", sd.getPhotourl());
+      //班级动态图片列表
+      map.put("pictureList", listP);
+      map.put("praisephotoList", listPhoto);
+      //点赞数
+      map.put("praiseCount", listDynamic.size());
+      map.put("replayList", listReplay);
+      //评论数
+      map.put("replayCount", listReplay.size());
+    }
+    
+    return map;
+  }
+
+}

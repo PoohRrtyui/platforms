@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="com.xunyun.infanteduplatform.persistent.UserInClassMapper">
+
+    <update id="updateUserInClass"
+            parameterType="com.xunyun.infanteduplatform.domain.UserInClassEntity">
+        update ib_userInClass
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="organizationId != null ">
+                organizationId = #{organizationId},
+            </if>
+            <if test="classId != null">
+                classId = #{classId},
+            </if>
+        </trim>
+    </update>
+
+    <select id="queryUsersInClass" resultType="com.xunyun.infanteduplatform.domain.SysUserLogin"
+    parameterType="java.util.Map">
+        SELECT
+        io.userId as id,
+        il.name
+        FROM ib_userInOrg io
+        LEFT JOIN ib_userInClass ic
+        ON io.userId = ic.userId
+        LEFT JOIN ib_userLogin il
+        ON io.userId = il.userId
+        WHERE ic.classId = #{classId}
+        and io.userType = #{userType}
+    </select>
+
+    <select id="queryClassByUserId" parameterType="com.xunyun.infanteduplatform.domain.SysUserInorg"
+            resultType="com.xunyun.infanteduplatform.domain.ClassManageEntity">
+        SELECT ic.CLASSID,ic.CLASSNAME
+        from IB_USERINCLASS iu
+        LEFT JOIN IB_CLASSINFO ic
+        on iu.CLASSID = ic.CLASSID
+        WHERE iu.userId = #{userId}
+    </select>
+</mapper>
